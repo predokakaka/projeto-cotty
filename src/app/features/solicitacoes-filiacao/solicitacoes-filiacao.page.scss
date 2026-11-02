@@ -1,0 +1,105 @@
+.solicitacoes-conteudo {
+  width: min(680px, calc(100% - 36px));
+  margin: 0 auto;
+  padding: 38px 0;
+  animation: aparecer-suave 280ms ease-out;
+
+  > header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  h1 {
+    margin: 0;
+    color: var(--app-text-primary);
+    font-size: clamp(26px, 5vw, 34px);
+    font-weight: 650;
+    letter-spacing: -0.04em;
+  }
+}
+
+.solicitacoes-icone {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+  color: var(--app-accent);
+  background: var(--app-teal-light);
+  border-radius: var(--app-radius-card);
+
+  ion-icon { font-size: 24px; }
+}
+
+.solicitacoes-sobretitulo {
+  margin: 0 0 7px;
+  color: var(--app-accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.solicitacoes-descricao {
+  max-width: 520px;
+  margin: 9px 0 0;
+  color: var(--app-text-secondary-readable);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.solicitacoes-vazio {
+  margin-top: 28px;
+  padding: 22px;
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
+
+  h2 {
+    margin: 0;
+    color: var(--app-text-primary);
+    font-size: 16px;
+    font-weight: 650;
+  }
+
+  p {
+    margin: 8px 0 0;
+    color: var(--app-text-secondary-readable);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+.solicitacoes-regras {
+  margin-top: 26px;
+
+  h2 {
+    margin: 0;
+    color: var(--app-text-primary);
+    font-size: 15px;
+    font-weight: 650;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin: 12px 0 0;
+    padding-left: 20px;
+    color: var(--app-text-secondary-readable);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+}
+
+.solicitacoes-aviso {
+  margin: 24px 0 0;
+  padding: 12px 14px;
+  color: var(--app-text-primary);
+  background: rgba(var(--app-accent-rgb), 0.07);
+  border: 1px solid rgba(var(--app-accent-rgb), 0.18);
+  border-radius: var(--app-radius-control);
+  font-size: 12px;
+  line-height: 1.5;
+}

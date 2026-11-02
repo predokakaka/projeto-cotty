@@ -1,0 +1,245 @@
+.toolbar-pesquisa {
+  --background: var(--app-background);
+  --padding-top: 0;
+  --padding-bottom: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --min-height: auto;
+  border-bottom: 1px solid var(--app-border);
+
+  ion-searchbar {
+    --background: var(--app-surface-elevated);
+    --color: var(--app-text-primary);
+    --placeholder-color: var(--app-text-secondary-readable);
+    --icon-color: var(--app-accent);
+    --clear-button-color: var(--app-text-secondary-readable);
+    --border-radius: var(--app-radius-control);
+    --box-shadow: none;
+    padding: 0;
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-control);
+  }
+}
+
+.filiacao-conteudo {
+  width: min(840px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 42px;
+}
+
+.filiacao-intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+
+  h1 {
+    margin: 0;
+    color: var(--app-text-primary);
+    font-size: clamp(24px, 5vw, 32px);
+    font-weight: 650;
+    letter-spacing: -0.04em;
+  }
+
+  > div > p:last-child {
+    margin: 8px 0 0;
+    color: var(--app-text-secondary-readable);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+}
+
+.filiacao-sobretitulo {
+  margin: 0 0 7px;
+  color: var(--app-accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.btn-proprietario {
+  flex: 0 0 auto;
+  --border-color: var(--app-border);
+  --color: var(--app-accent);
+  --border-radius: var(--app-radius-control);
+  font-size: 12px;
+  text-transform: none;
+}
+
+.aviso-filiacao {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  color: var(--app-text-secondary-readable);
+  background: rgba(var(--app-accent-rgb), 0.07);
+  border: 1px solid rgba(var(--app-accent-rgb), 0.18);
+  border-radius: var(--app-radius-control);
+
+  ion-icon {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    color: var(--app-accent);
+    font-size: 19px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  strong { color: var(--app-text-primary); }
+}
+
+.lista-filiacao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-filiacao {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 17px;
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
+  animation: aparecer-suave 240ms ease-out;
+}
+
+.skeleton-card-filiacao {
+  pointer-events: none;
+  animation: none;
+}
+
+.skeleton-icone-filiacao {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  margin: 0;
+  border-radius: var(--app-radius-control);
+}
+
+.skeleton-conteudo-filiacao {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.skeleton-titulo-filiacao {
+  width: 52%;
+  height: 16px;
+  margin: 1px 0 0;
+}
+
+.skeleton-local-filiacao {
+  width: 78%;
+  height: 12px;
+  margin: 0;
+}
+
+.skeleton-acao-filiacao {
+  width: 42%;
+  height: 28px;
+  margin: 2px 0 0;
+  border-radius: var(--app-radius-control);
+}
+
+.card-filiacao-icone {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--app-accent);
+  background: var(--app-teal-light);
+  border-radius: var(--app-radius-control);
+
+  ion-icon { font-size: 21px; }
+}
+
+.card-filiacao-conteudo {
+  min-width: 0;
+  flex: 1;
+}
+
+.card-filiacao-titulo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+
+  h2 {
+    margin: 1px 0 0;
+    color: var(--app-text-primary);
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  ion-badge {
+    flex: 0 0 auto;
+    font-size: 10px;
+    text-transform: none;
+  }
+}
+
+.card-filiacao-local {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--app-text-secondary-readable);
+  font-size: 12px;
+  line-height: 1.5;
+
+  ion-icon {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    color: var(--app-accent);
+    font-size: 15px;
+  }
+}
+
+.card-filiacao-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+
+  ion-button {
+    min-height: 44px;
+    margin: 0;
+    --border-radius: var(--app-radius-control);
+    font-size: 12px;
+    text-transform: none;
+  }
+}
+
+.regras-filiacao {
+  margin: 18px 2px 0;
+  color: var(--app-text-secondary-readable);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .filiacao-intro {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-proprietario { margin: 0; }
+  .card-filiacao { gap: 11px; padding: 14px; }
+  .card-filiacao-icone { width: 38px; height: 38px; }
+  .skeleton-icone-filiacao { width: 38px; height: 38px; flex-basis: 38px; }
+}

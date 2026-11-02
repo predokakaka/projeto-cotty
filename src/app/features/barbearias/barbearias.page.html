@@ -1,0 +1,177 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Estabelecimentos</ion-title>
+    <ion-button
+      class="theme-toggle"
+      slot="end"
+      fill="solid"
+      (click)="theme.toggle()"
+      [attr.aria-label]="theme.isDark() ? 'Ativar modo claro' : 'Ativar modo escuro'"
+      [attr.title]="theme.isDark() ? 'Ativar modo claro' : 'Ativar modo escuro'"
+    >
+      <ion-icon
+        slot="icon-only"
+        [name]="theme.isDark() ? 'moon-outline' : 'sunny-outline'"
+        aria-hidden="true"
+      ></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+  <ion-toolbar class="toolbar-pesquisa">
+    <ion-searchbar
+      [value]="termoBusca"
+      (ionInput)="filtrar($event)"
+      (ionClear)="limparBusca()"
+      placeholder="Pesquisar por nome ou endereço..."
+      [debounce]="200"
+      animated="true"
+      show-clear-button="focus"
+      [disabled]="carregando || comErro"
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="pagina">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Estabelecimentos</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-refresher slot="fixed" (ionRefresh)="atualizar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (carregando) {
+    <div class="lista-barbearias skeleton-lista" role="status" aria-label="Carregando estabelecimentos">
+      @for (item of [1, 2, 3]; track item) {
+        <div class="cartao-barbearia skeleton-barbearia" aria-hidden="true">
+          <ion-skeleton-text class="skeleton-foto" [animated]="true"></ion-skeleton-text>
+          <div class="skeleton-conteudo">
+            <ion-skeleton-text class="skeleton-titulo" [animated]="true"></ion-skeleton-text>
+            <ion-skeleton-text class="skeleton-linha" [animated]="true"></ion-skeleton-text>
+            <ion-skeleton-text class="skeleton-linha skeleton-linha-curta" [animated]="true"></ion-skeleton-text>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (comErro) {
+    <div class="estado-vazio">
+      <ion-icon name="storefront-outline"></ion-icon>
+      <p>Não foi possível carregar os estabelecimentos agora.</p>
+      <span>Puxe a tela para baixo para tentar de novo.</span>
+    </div>
+  } @else if (todasBarbearias.length === 0) {
+    <div class="estado-vazio">
+      <ion-icon name="cut-outline"></ion-icon>
+      <p>Nenhum estabelecimento cadastrado ainda.</p>
+    </div>
+  } @else if (barbearias.length === 0) {
+    <div class="estado-vazio">
+      <ion-icon name="search-outline"></ion-icon>
+      <p>Nenhum estabelecimento encontrado para "{{ termoBusca }}".</p>
+      <span>Tente buscar por outro nome ou endereço.</span>
+      <ion-button fill="outline" class="btn-estado" (click)="limparBusca()">
+        Limpar pesquisa
+      </ion-button>
+    </div>
+  } @else {
+    @if (termoBusca.trim()) {
+      <div class="resultado-contagem" role="status" aria-live="polite">
+        <span>{{ barbearias.length }} {{ barbearias.length === 1 ? 'estabelecimento encontrado' : 'estabelecimentos encontrados' }}</span>
+      </div>
+    }
+
+    <div class="lista-barbearias">
+      @for (barbearia of barbearias; track barbearia.barbearia_id) {
+        <div
+          class="cartao-barbearia"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'Ver perfil de ' + barbearia.nomeFantasia"
+          (click)="abrirBarbearia(barbearia)"
+          (keydown.space)="$event.preventDefault()"
+          (keyup.space)="abrirBarbearia(barbearia)"
+          (keyup.enter)="abrirBarbearia(barbearia)"
+        >
+          <div class="cartao-foto">
+            @if (barbearia.foto) {
+              <ion-img [src]="barbearia.foto" [alt]="barbearia.nomeFantasia"></ion-img>
+            } @else {
+              <div class="foto-indisponivel">
+                <ion-icon name="cut-outline"></ion-icon>
+              </div>
+            }
+          </div>
+
+          <div class="cartao-conteudo">
+            <div class="cartao-cabecalho">
+              <h2>{{ barbearia.nomeFantasia }}</h2>
+              @if (barbearia.status) {
+                <ion-badge [color]="barbearia.status.toLowerCase() === 'aberto' ? 'success' : 'medium'">
+                  {{ barbearia.status }}
+                </ion-badge>
+              }
+            </div>
+
+            <p class="cartao-descricao">{{ barbearia.descricao }}</p>
+
+            <div class="cartao-local">
+              <ion-icon name="location-outline"></ion-icon>
+              <span>{{ barbearia.endereco }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="fab-barbearia">
+    <ion-fab-button aria-label="Opções para estabelecimentos e profissionais" (click)="abrirOpcoes()">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-modal
+    [isOpen]="opcoesAbertas"
+    (didDismiss)="aoFecharModal()"
+    class="modal-opcoes-barbearia"
+    aria-labelledby="titulo-opcoes-barbearia"
+  >
+    <ng-template>
+      <div class="opcoes-modal">
+        <div class="opcoes-modal-topo">
+          <div>
+            <p class="opcoes-modal-sobretitulo">FAÇA PARTE</p>
+            <h2 id="titulo-opcoes-barbearia">Como podemos ajudar?</h2>
+          </div>
+          <ion-button fill="clear" aria-label="Fechar" (click)="fecharOpcoes()">
+            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+          </ion-button>
+        </div>
+
+        <button type="button" class="opcao-barbearia" (click)="cadastrarBarbearia()">
+          <span class="opcao-barbearia-icone">
+            <ion-icon name="storefront-outline"></ion-icon>
+          </span>
+          <span class="opcao-barbearia-texto">
+            <strong>Cadastrar meu estabelecimento</strong>
+            <small>Preencha os dados do estabelecimento e responsável.</small>
+          </span>
+          <ion-icon class="opcao-barbearia-seta" name="add-outline"></ion-icon>
+        </button>
+
+        <button type="button" class="opcao-barbearia" (click)="encontrarFiliacao()">
+          <span class="opcao-barbearia-icone">
+            <ion-icon name="person-add-outline"></ion-icon>
+          </span>
+          <span class="opcao-barbearia-texto">
+            <strong>Filiar-se a um estabelecimento</strong>
+            <small>Encontre estabelecimentos e conheça a futura área de filiação.</small>
+            <span class="opcao-barbearia-aviso">Funcionalidade em desenvolvimento</span>
+          </span>
+          <ion-icon class="opcao-barbearia-seta" name="add-outline"></ion-icon>
+        </button>
+      </div>
+    </ng-template>
+  </ion-modal>
+</ion-content>

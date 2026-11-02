@@ -1,0 +1,206 @@
+<ion-header class="sobre-header">
+  <ion-toolbar>
+    <a class="marca" slot="start" routerLink="/sobre-nos" aria-label="Sobre nós">
+      <span class="marca-icone"><ion-icon name="cut-outline"></ion-icon></span>
+      <span>Sobre nós</span>
+    </a>
+    <nav class="navegacao" slot="end" aria-label="Navegação principal">
+      <ion-button
+        class="theme-toggle"
+        fill="outline"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.isDark() ? 'Ativar modo claro' : 'Ativar modo escuro'"
+        [attr.title]="theme.isDark() ? 'Ativar modo claro' : 'Ativar modo escuro'"
+      >
+        <ion-icon
+          slot="icon-only"
+          [name]="theme.isDark() ? 'moon-outline' : 'sunny-outline'"
+          aria-hidden="true"
+        ></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" routerLink="/login">Entrar</ion-button>
+      <ion-button class="nav-cadastro" routerLink="/cadastro">Criar conta</ion-button>
+    </nav>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="pagina sobre-pagina">
+  <main>
+    <section class="sobre-hero" aria-labelledby="titulo-hero">
+      <div class="hero-conteudo">
+        <p class="sobretitulo"><span></span> TECNOLOGIA QUE APROXIMA</p>
+        <h1 id="titulo-hero">Conectando pessoas, <span>valorizando profissionais.</span></h1>
+        <p class="hero-descricao">
+          Acreditamos que encontrar bons profissionais e administrar um estabelecimento deve ser
+          uma experiência simples, prática e acessível. Por isso, desenvolvemos uma plataforma que
+          aproxima clientes, profissionais e estabelecimentos em um único lugar.
+        </p>
+        <p class="hero-frase">Mais praticidade para quem procura. Mais oportunidades para quem oferece.</p>
+        <div class="hero-acoes">
+          <ion-button class="btn-principal" routerLink="/cadastro">
+            Criar minha conta
+            <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+          </ion-button>
+          <a class="link-explorar" href="#nossa-historia">Conheça nossa história</a>
+        </div>
+      </div>
+
+      <div class="hero-imagem">
+        <img
+          src="assets/images/sobre-nos-barbearia.jpg"
+          alt="Profissional atendendo um cliente em uma barbearia"
+          fetchpriority="high"
+        />
+        <div class="imagem-legenda">
+          <span class="legenda-icone"><ion-icon name="people-outline"></ion-icon></span>
+          <span><strong>Conexões que fazem sentido</strong><small>Uma experiência melhor para todos</small></span>
+        </div>
+        <span class="imagem-detalhe" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <section class="historia secao" id="nossa-historia" aria-labelledby="titulo-historia">
+      <div class="secao-identidade">
+        <p class="sobretitulo">NOSSA HISTÓRIA</p>
+        <h2 id="titulo-historia">Tudo começa com uma ideia.</h2>
+      </div>
+      <div class="historia-texto">
+        <p>
+          A plataforma surgiu da percepção de que encontrar profissionais, organizar atendimentos
+          e administrar agendamentos ainda pode ser um processo complicado. Identificamos a
+          oportunidade de aproximar esses dois lados por meio da tecnologia.
+        </p>
+        <p>
+          Nossa proposta é criar um ambiente digital onde clientes encontrem profissionais,
+          estabelecimentos tenham mais facilidade para organizar suas atividades e profissionais
+          possam ampliar suas oportunidades.
+        </p>
+        <p>
+          Estamos construindo uma solução pensada para acompanhar a evolução do mercado e tornar
+          essa experiência cada vez melhor.
+        </p>
+      </div>
+    </section>
+
+    <section class="proposito secao" aria-label="Nosso propósito">
+      <article class="proposito-card">
+        <span class="icone-card"><ion-icon name="cut-outline"></ion-icon></span>
+        <p class="sobretitulo">NOSSA MISSÃO</p>
+        <h2>Facilitar conexões e transformar experiências.</h2>
+        <p>
+          Nosso propósito é simplificar a conexão entre clientes e profissionais, oferecendo
+          ferramentas que tornem os agendamentos mais acessíveis, organizados e eficientes.
+          Queremos contribuir para o crescimento dos estabelecimentos e para a valorização de
+          cada profissional.
+        </p>
+      </article>
+      <article class="proposito-card proposito-visao">
+        <span class="icone-card"><ion-icon name="arrow-forward-outline"></ion-icon></span>
+        <p class="sobretitulo">NOSSA VISÃO</p>
+        <h2>Um futuro mais conectado.</h2>
+        <p>
+          Buscamos construir uma plataforma de referência na conexão entre clientes e profissionais
+          de serviços de beleza e cuidados pessoais, ampliando oportunidades e tornando a
+          experiência de agendamento cada vez mais simples e integrada.
+        </p>
+      </article>
+    </section>
+
+    <section class="valores secao" aria-labelledby="titulo-valores">
+      <div class="cabecalho-secao">
+        <div>
+          <p class="sobretitulo">O QUE NOS MOVE</p>
+          <h2 id="titulo-valores">Nossos valores</h2>
+        </div>
+        <p>Princípios que orientam cada conexão e cada melhoria da plataforma.</p>
+      </div>
+      <div class="valores-grid">
+        <article class="valor-card">
+          <span class="icone-card"><ion-icon name="shield-checkmark-outline"></ion-icon></span>
+          <h3>Confiança</h3>
+          <p>Construir relações transparentes e seguras entre todos os usuários da plataforma.</p>
+        </article>
+        <article class="valor-card">
+          <span class="icone-card"><ion-icon name="time-outline"></ion-icon></span>
+          <h3>Praticidade</h3>
+          <p>Desenvolver soluções que simplifiquem tarefas e facilitem o dia a dia.</p>
+        </article>
+        <article class="valor-card">
+          <span class="icone-card"><ion-icon name="people-outline"></ion-icon></span>
+          <h3>Valorização profissional</h3>
+          <p>Reconhecer a importância dos profissionais e oferecer oportunidades para seu desenvolvimento.</p>
+        </article>
+        <article class="valor-card">
+          <span class="icone-card"><ion-icon name="bulb-outline"></ion-icon></span>
+          <h3>Inovação</h3>
+          <p>Utilizar a tecnologia para melhorar continuamente a experiência de clientes e estabelecimentos.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="publicos secao" aria-labelledby="titulo-publicos">
+      <div class="cabecalho-secao">
+        <div>
+          <p class="sobretitulo">FEITA PARA CONECTAR</p>
+          <h2 id="titulo-publicos">Para quem existimos</h2>
+        </div>
+        <p>Uma plataforma, diferentes necessidades. O mesmo objetivo: aproximar.</p>
+      </div>
+      <div class="publicos-grid">
+        <article class="publico-card">
+          <span class="publico-numero">01</span>
+          <span class="icone-card"><ion-icon name="people-outline"></ion-icon></span>
+          <h3>Para clientes</h3>
+          <p>Encontre estabelecimentos, conheça profissionais, consulte serviços e agende seus atendimentos com praticidade.</p>
+          <a routerLink="/tabs/barbearias" aria-label="Conhecer estabelecimentos como cliente">
+            Encontrar estabelecimentos <ion-icon name="arrow-forward-outline"></ion-icon>
+          </a>
+        </article>
+        <article class="publico-card">
+          <span class="publico-numero">02</span>
+          <span class="icone-card"><ion-icon name="cut-outline"></ion-icon></span>
+          <h3>Para profissionais</h3>
+          <p>Amplie sua visibilidade, conecte-se a estabelecimentos e tenha mais oportunidades de desenvolver sua carreira.</p>
+          <a routerLink="/cadastro" aria-label="Criar conta como profissional">
+            Fazer parte <ion-icon name="arrow-forward-outline"></ion-icon>
+          </a>
+        </article>
+        <article class="publico-card">
+          <span class="publico-numero">03</span>
+          <span class="icone-card"><ion-icon name="storefront-outline"></ion-icon></span>
+          <h3>Para estabelecimentos</h3>
+          <p>Organize sua equipe, gerencie seus serviços e simplifique o gerenciamento dos agendamentos.</p>
+          <p class="publico-indisponivel">Login para estabelecimentos em breve.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="sobre-cta" aria-labelledby="titulo-cta">
+      <div>
+        <p class="sobretitulo">O PRÓXIMO PASSO É SEU</p>
+        <h2 id="titulo-cta">Faça parte dessa transformação.</h2>
+        <p>
+          Seja você um cliente em busca de praticidade, um profissional em busca de oportunidades
+          ou um estabelecimento que deseja evoluir, acompanhe as novidades por aqui.
+        </p>
+      </div>
+      <div class="cta-acoes">
+        <ion-button class="btn-cta-principal" routerLink="/cadastro">
+          Criar minha conta <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+        </ion-button>
+        <ion-button class="btn-cta-secundario" fill="outline" routerLink="/tabs/barbearias">
+          Conhecer a plataforma
+        </ion-button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sobre-footer">
+    <a class="marca" routerLink="/sobre-nos">
+      <span class="marca-icone"><ion-icon name="cut-outline"></ion-icon></span>
+      <span>Conexões que valorizam</span>
+    </a>
+    <span>Uma plataforma para aproximar pessoas e profissionais.</span>
+    <a routerLink="/login">Entrar como cliente ou profissional <ion-icon name="arrow-forward-outline"></ion-icon></a>
+  </footer>
+</ion-content>

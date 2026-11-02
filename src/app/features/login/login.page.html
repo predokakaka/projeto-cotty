@@ -1,0 +1,69 @@
+<ion-content [fullscreen]="true" class="pagina">
+  <main class="tela-form centralizada">
+    <header class="tela-topo">
+      <div class="tela-marca">
+        <ion-icon name="cut-outline"></ion-icon>
+      </div>
+      <h1>Entrar</h1>
+      <p>Acesse sua conta para agendar um horário.</p>
+    </header>
+
+    <section class="form-campos">
+      <ion-input
+        label="Nome"
+        labelPlacement="floating"
+        fill="outline"
+        type="text"
+        autocomplete="name"
+        [(ngModel)]="login.nome"
+        (keyup.enter)="acessar()"
+      />
+      <ion-input
+        label="E-mail"
+        labelPlacement="floating"
+        fill="outline"
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        [(ngModel)]="login.email"
+        (keyup.enter)="acessar()"
+      />
+      <ion-input
+        label="Senha"
+        labelPlacement="floating"
+        fill="outline"
+        type="password"
+        autocomplete="current-password"
+        [(ngModel)]="login.password"
+        (ionInput)="aoDigitarSenha($event)"
+        (keyup.enter)="acessar()"
+      >
+        <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+      </ion-input>
+    </section>
+
+    @if (mensagemErro) {
+      <p class="form-erro" role="alert">{{ mensagemErro }}</p>
+    }
+
+    <ion-button
+      expand="block"
+      class="btn-principal"
+      [disabled]="entrando || segundosBloqueio > 0"
+      (click)="acessar()"
+    >
+      @if (entrando) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        Entrar
+      }
+    </ion-button>
+
+    <ion-button fill="clear" expand="block" class="btn-link" routerLink="/cadastro">
+      Não tem conta? Cadastre-se
+    </ion-button>
+    <ion-button fill="clear" expand="block" class="btn-link" routerLink="/sobre-nos">
+      Conheça a plataforma
+    </ion-button>
+  </main>
+</ion-content>

@@ -1,0 +1,115 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/barbearias"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Encontrar um estabelecimento</ion-title>
+  </ion-toolbar>
+  <ion-toolbar class="toolbar-pesquisa">
+    <ion-searchbar
+      [value]="termoBusca"
+      (ionInput)="filtrar($event)"
+      (ionClear)="limparBusca()"
+      placeholder="Pesquisar por nome..."
+      [debounce]="200"
+      animated="true"
+      show-clear-button="focus"
+      [disabled]="carregando || comErro"
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="pagina">
+  <ion-refresher slot="fixed" (ionRefresh)="atualizar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <main class="filiacao-conteudo">
+    <section class="filiacao-intro">
+      <div>
+        <p class="filiacao-sobretitulo">CRESÇA EM CONEXÃO</p>
+        <h1>Encontrar um estabelecimento</h1>
+        <p>Pesquise estabelecimentos cadastrados e conheça os detalhes antes de se filiar.</p>
+      </div>
+      <ion-button fill="outline" class="btn-proprietario" (click)="abrirSolicitacoes()">
+        Área do proprietário
+      </ion-button>
+    </section>
+
+    <div class="aviso-filiacao" role="status">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <p>
+        <strong>Filiação em desenvolvimento.</strong>
+        Solicitações, vínculos e histórico ainda não estão disponíveis. Nenhuma solicitação será enviada por esta tela.
+      </p>
+    </div>
+
+    @if (carregando) {
+      <div class="lista-filiacao skeleton-lista-filiacao" role="status" aria-label="Carregando estabelecimentos">
+        @for (item of [1, 2, 3]; track item) {
+          <article class="card-filiacao skeleton-card-filiacao" aria-hidden="true">
+            <ion-skeleton-text class="skeleton-icone-filiacao" [animated]="true"></ion-skeleton-text>
+            <div class="skeleton-conteudo-filiacao">
+              <ion-skeleton-text class="skeleton-titulo-filiacao" [animated]="true"></ion-skeleton-text>
+              <ion-skeleton-text class="skeleton-local-filiacao" [animated]="true"></ion-skeleton-text>
+              <ion-skeleton-text class="skeleton-acao-filiacao" [animated]="true"></ion-skeleton-text>
+            </div>
+          </article>
+        }
+      </div>
+    } @else if (comErro) {
+      <div class="estado-vazio">
+        <ion-icon name="storefront-outline"></ion-icon>
+        <p>Não foi possível carregar os estabelecimentos.</p>
+        <span>Tente novamente mais tarde.</span>
+      </div>
+    } @else if (todasBarbearias.length === 0) {
+      <div class="estado-vazio">
+        <ion-icon name="storefront-outline"></ion-icon>
+        <p>Nenhum estabelecimento cadastrado para exibir.</p>
+      </div>
+    } @else if (barbearias.length === 0) {
+      <div class="estado-vazio">
+        <ion-icon name="search-outline"></ion-icon>
+        <p>Nenhum estabelecimento encontrado para "{{ termoBusca }}".</p>
+        <ion-button fill="outline" class="btn-estado" (click)="limparBusca()">Limpar pesquisa</ion-button>
+      </div>
+    } @else {
+      <div class="lista-filiacao">
+        @for (barbearia of barbearias; track barbearia.barbearia_id) {
+          <article class="card-filiacao">
+            <div class="card-filiacao-icone">
+              <ion-icon name="storefront-outline"></ion-icon>
+            </div>
+            <div class="card-filiacao-conteudo">
+              <div class="card-filiacao-titulo">
+                <h2>{{ barbearia.nomeFantasia }}</h2>
+                @if (barbearia.status) {
+                  <ion-badge [color]="barbearia.status.toLowerCase() === 'aberto' ? 'success' : 'medium'">
+                    {{ barbearia.status }}
+                  </ion-badge>
+                }
+              </div>
+              <p class="card-filiacao-local">
+                <ion-icon name="location-outline"></ion-icon>
+                <span>{{ barbearia.endereco || 'Endereço não informado' }} · {{ barbearia.cidade || 'Cidade não informada' }}</span>
+              </p>
+              <div class="card-filiacao-acoes">
+                <ion-button fill="clear" (click)="visualizarDetalhes(barbearia)">
+                  Visualizar detalhes
+                </ion-button>
+                <ion-button fill="outline" disabled>
+                  Solicitar filiação
+                </ion-button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+
+    <p class="regras-filiacao">
+      Uma solicitação pendente não representa um vínculo ativo. As regras de vínculo e o histórico dependerão da futura integração.
+    </p>
+  </main>
+</ion-content>

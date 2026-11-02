@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/filiacao"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Solicitações de filiação</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="pagina">
+  <main class="solicitacoes-conteudo">
+    <header>
+      <div class="solicitacoes-icone">
+        <ion-icon name="people-outline"></ion-icon>
+      </div>
+      <p class="solicitacoes-sobretitulo">ÁREA DO PROPRIETÁRIO</p>
+      <h1>Solicitações de filiação</h1>
+      <p class="solicitacoes-descricao">
+        Esta área será usada pelo proprietário para acompanhar os pedidos recebidos.
+      </p>
+    </header>
+
+    <section class="solicitacoes-vazio" aria-live="polite">
+      <h2>Nenhuma solicitação disponível</h2>
+      <p>
+        As solicitações e o histórico só serão exibidos quando houver integração com o backend.
+        Nenhum pedido ou vínculo foi criado nesta etapa.
+      </p>
+    </section>
+
+    <section class="solicitacoes-regras" aria-labelledby="titulo-regras">
+      <h2 id="titulo-regras">Preparação da área</h2>
+      <ul>
+        <li>Exibição futura do nome, informações básicas e data da solicitação.</li>
+        <li>Apenas o proprietário poderá aceitar ou recusar um pedido.</li>
+        <li>Um pedido pendente não representa um vínculo ativo.</li>
+        <li>O histórico de solicitações e vínculos deverá ser preservado.</li>
+      </ul>
+    </section>
+
+    <p class="solicitacoes-aviso" role="status">
+      Funcionalidade em desenvolvimento. Nenhuma operação está disponível nesta tela.
+    </p>
+  </main>
+</ion-content>

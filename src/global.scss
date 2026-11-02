@@ -1,0 +1,505 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally and across pages.
+ */
+
+@use "./theme/variables.scss";
+
+@import "@ionic/angular/css/core.css";
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+html,
+body {
+  min-height: 100%;
+  background: var(--app-background);
+  color: var(--app-text-primary);
+  font-family: var(--app-font-body);
+  font-size: var(--app-font-size-md);
+  font-weight: var(--app-font-weight-regular);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ion-title {
+  font-family: var(--app-font-heading);
+  color: var(--app-text-primary);
+}
+
+h1 {
+  font-weight: var(--app-font-weight-bold);
+  line-height: 1.15;
+}
+
+h2 {
+  font-weight: var(--app-font-weight-semibold);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-weight: var(--app-font-weight-medium);
+  line-height: 1.35;
+}
+
+ion-button,
+ion-input,
+ion-textarea,
+ion-select,
+ion-searchbar,
+ion-item,
+ion-label,
+ion-card,
+ion-badge,
+ion-segment-button,
+ion-menu,
+ion-modal,
+ion-popover,
+ion-alert {
+  font-family: var(--app-font-body);
+}
+
+ion-input::part(native),
+ion-textarea::part(native),
+ion-searchbar::part(native-input) {
+  font-family: var(--app-font-body);
+}
+
+ion-toolbar {
+  --background: var(--app-navigation);
+  --color: var(--app-on-navigation);
+  --border-color: transparent;
+}
+
+ion-content.pagina {
+  --background: var(--app-background);
+  --color: var(--app-text-primary);
+}
+
+ion-tab-bar {
+  --background: var(--app-surface-elevated);
+  --color: var(--app-text-secondary-readable);
+  --color-selected: var(--app-primary);
+  border-top: 1px solid var(--app-border);
+  box-shadow: 0 -4px 16px rgba(var(--app-navigation-rgb), 0.06);
+}
+
+ion-list {
+  --background: var(--app-surface);
+  --ion-item-background: var(--app-surface-elevated);
+  color: var(--app-text-primary);
+}
+
+ion-modal,
+ion-popover,
+ion-menu {
+  --background: var(--app-surface-elevated);
+  --color: var(--app-text-primary);
+  --box-shadow: var(--app-shadow-raised);
+  --border-radius: var(--app-radius-panel);
+}
+
+ion-loading,
+ion-toast {
+  --background: var(--app-surface-raised);
+  --color: var(--app-text-primary);
+}
+
+ion-alert {
+  --background: var(--app-surface-elevated);
+  --backdrop-opacity: 0.42;
+  --button-color: var(--app-primary);
+  --color: var(--app-text-primary);
+  font-family: var(--app-font-body);
+}
+
+ion-modal.modal-opcoes-barbearia {
+  --height: auto;
+  --max-height: 90%;
+  --width: min(100%, 560px);
+  --border-radius: var(--app-radius-panel);
+  --box-shadow: var(--app-shadow-raised);
+}
+
+ion-card {
+  --background: var(--app-surface-elevated);
+  --color: var(--app-text-primary);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
+}
+
+ion-segment {
+  --background: var(--app-surface);
+  border-radius: var(--app-radius-control);
+}
+
+ion-segment-button {
+  --color: var(--app-text-secondary-readable);
+  --color-checked: var(--app-text-primary);
+  --indicator-color: var(--app-olive-soft);
+  --background-checked: var(--app-olive-soft);
+  --border-radius: var(--app-radius-control);
+  font-family: var(--app-font-body);
+}
+
+ion-datetime {
+  --background: var(--app-surface-elevated);
+  --background-rgb: var(--app-surface-elevated-rgb);
+  --wheel-highlight-background: var(--app-olive-soft);
+  --wheel-fade-background-rgb: var(--app-surface-elevated-rgb);
+  color: var(--app-text-primary);
+  border-radius: var(--app-radius-panel);
+}
+
+ion-picker {
+  --background: var(--app-surface-elevated);
+  --fade-background-rgb: var(--app-surface-elevated-rgb);
+  --highlight-background: var(--app-olive-soft);
+  --highlight-border-radius: var(--app-radius-control);
+  color: var(--app-text-primary);
+}
+
+ion-picker-column {
+  --color: var(--app-text-secondary-readable);
+  --highlighted-color: var(--app-text-primary);
+}
+
+.estado-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 72px 32px;
+  text-align: center;
+  color: var(--app-text-secondary-readable);
+
+  ion-icon { font-size: 34px; color: var(--app-accent); }
+  p { margin: 0; color: var(--app-text-primary); font-size: 16px; }
+  span { font-size: 13px; }
+}
+
+.btn-estado {
+  --color: var(--app-accent);
+  --border-color: var(--app-accent);
+  --border-radius: var(--app-radius-control);
+  margin-top: 8px;
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-semibold);
+  text-transform: none;
+}
+
+ion-button.btn-principal {
+  --background: var(--app-accent);
+  --background-activated: var(--app-accent);
+  --color: var(--app-contrast);
+  --border-radius: var(--app-radius-control);
+  margin: 4px 0 0;
+  font-weight: var(--app-font-weight-semibold);
+  text-transform: none;
+
+  &[disabled] { opacity: 0.55; }
+}
+
+ion-button.btn-link {
+  --color: var(--app-accent);
+  margin: 0;
+  font-size: var(--app-font-size-sm);
+  text-transform: none;
+}
+
+.tela-form {
+  box-sizing: border-box;
+  max-width: 420px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 40px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  &.centralizada { justify-content: center; padding-top: 56px; }
+}
+
+.tela-topo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  h1 { margin: 8px 0 0; font-size: var(--app-font-size-xl); font-weight: var(--app-font-weight-bold); color: var(--app-text-primary); }
+  p { margin: 0; font-size: var(--app-font-size-sm); line-height: 1.5; color: var(--app-text-secondary-readable); }
+}
+
+.tela-marca {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--app-border);
+  border-radius: 50%;
+  background: var(--app-surface);
+
+  ion-icon { font-size: 24px; color: var(--app-accent); }
+}
+
+.seletor-tipo {
+  --background: var(--app-surface-elevated);
+
+  ion-segment-button {
+    --color: var(--app-text-secondary-readable);
+    --color-checked: var(--app-text-primary);
+    --indicator-color: var(--app-accent);
+    --background-checked: var(--app-teal-light);
+    font-size: var(--app-font-size-xs);
+    text-transform: none;
+    min-height: 44px;
+  }
+}
+
+.form-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  ion-input, ion-textarea, ion-select {
+    --background: var(--app-surface-inset);
+    --color: var(--app-text-primary);
+    --highlight-color-focused: var(--app-accent);
+    --border-color: var(--app-border);
+    --border-style: solid;
+    --border-width: 1px;
+    --placeholder-color: var(--app-text-secondary-readable);
+    --border-radius: var(--app-radius-control);
+    color: var(--app-text-primary);
+    box-shadow: var(--app-shadow-inset);
+  }
+}
+
+ion-input,
+ion-textarea,
+ion-select,
+ion-searchbar {
+  --background: var(--app-surface-inset);
+  --color: var(--app-text-primary);
+  --placeholder-color: var(--app-text-secondary-readable);
+  --highlight-color-focused: var(--app-accent);
+  --border-color: var(--app-border);
+  --border-style: solid;
+  --border-width: 1px;
+  --border-radius: var(--app-radius-control);
+  box-shadow: var(--app-shadow-inset);
+  transition: border-color var(--app-transition-base), box-shadow var(--app-transition-base);
+}
+
+ion-input,
+ion-select,
+ion-searchbar {
+  min-height: 48px;
+}
+
+ion-checkbox {
+  --checkbox-background-checked: var(--app-primary);
+  --border-color-checked: var(--app-primary);
+  --checkmark-color: var(--app-contrast);
+  --border-radius: var(--app-radius-checkbox);
+}
+
+ion-radio {
+  --color: var(--app-border);
+  --color-checked: var(--app-primary);
+}
+
+ion-toggle {
+  --track-background: var(--app-border);
+  --track-background-checked: var(--app-primary);
+  --handle-background: var(--app-surface-elevated);
+}
+
+ion-progress-bar {
+  --background: var(--app-border);
+  --progress-background: var(--app-primary);
+}
+
+ion-input.ion-focused,
+ion-textarea.ion-focused,
+ion-select.ion-focused,
+ion-searchbar.has-focus {
+  border-color: var(--app-accent);
+  box-shadow: var(--app-shadow-focus);
+}
+
+ion-item {
+  --background: var(--app-surface-elevated);
+  --color: var(--app-text-primary);
+  --border-color: var(--app-border);
+  --highlight-color-focused: var(--app-accent);
+}
+
+ion-button {
+  --border-radius: var(--app-radius-control);
+  --min-height: 44px;
+  --transition: var(--app-transition-base);
+  min-height: 44px;
+  text-transform: none;
+
+  &:not(.button-outline):not(.button-clear) {
+    --box-shadow: var(--app-shadow-button);
+  }
+
+  &::part(native) {
+    min-height: 44px;
+  }
+}
+
+ion-tab-button::part(native) {
+  min-height: 56px;
+}
+
+ion-tab-button.tab-selected {
+  --color: var(--app-primary);
+}
+
+ion-fab-button {
+  --background: var(--app-primary);
+  --background-activated: var(--app-primary);
+  --color: var(--app-contrast);
+  --box-shadow: var(--app-shadow-raised);
+}
+
+.ion-color-info {
+  --ion-color-base: var(--ion-color-info);
+  --ion-color-base-rgb: var(--ion-color-info-rgb);
+  --ion-color-contrast: var(--ion-color-info-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-info-contrast-rgb);
+  --ion-color-shade: var(--ion-color-info-shade);
+  --ion-color-tint: var(--ion-color-info-tint);
+}
+
+ion-badge {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  min-height: 22px;
+  border-radius: var(--app-radius-badge);
+  font-family: var(--app-font-body);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-semibold);
+}
+
+ion-skeleton-text {
+  --background: rgba(var(--app-navigation-rgb), 0.09);
+  --background-rgb: var(--app-navigation-rgb);
+  border-radius: var(--app-radius-control);
+}
+
+.form-aviso {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--app-text-secondary-readable);
+}
+
+.form-erro {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--app-danger-text);
+  border: 1px solid rgba(var(--app-danger-rgb), 0.5);
+  border-radius: var(--app-radius-control);
+  background: var(--app-danger-soft);
+}
+
+a {
+  transition: color var(--app-transition-fast);
+}
+
+ion-button::part(native) {
+  transition: transform var(--app-transition-fast), filter var(--app-transition-fast), box-shadow var(--app-transition-fast);
+}
+
+ion-button:not([disabled]):active::part(native) {
+  transform: scale(0.98);
+}
+
+ion-button:focus-visible::part(native),
+ion-tab-button:focus-visible::part(native),
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(var(--app-primary-rgb), 0.42);
+  outline-offset: 3px;
+}
+
+ion-button[disabled] {
+  opacity: 0.56;
+  --box-shadow: none;
+}
+
+ion-tab-button ion-icon {
+  transition: transform 180ms ease;
+}
+
+ion-tab-button.tab-selected ion-icon {
+  transform: translateY(-1px) scale(1.04);
+}
+
+.tela-form,
+.estado-vazio,
+.lista-barbearias,
+.lista-agendamentos,
+.perfil-conteudo {
+  animation: aparecer-suave 280ms ease-out;
+}
+
+.cartao-barbearia,
+.cartao-agendamento,
+.cartao-servico,
+.proposito-card,
+.valor-card,
+.publico-card {
+  animation: aparecer-suave 240ms ease-out;
+}
+
+@keyframes aparecer-suave {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (hover: hover) {
+  ion-button:not([disabled]):hover::part(native) {
+    filter: brightness(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

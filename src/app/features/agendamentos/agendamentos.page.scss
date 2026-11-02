@@ -1,0 +1,99 @@
+.lista-agendamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.cartao-agendamento {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
+}
+
+.skeleton-agendamento {
+  pointer-events: none;
+}
+
+.skeleton-agendamento-topo {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.skeleton-agendamento-titulo {
+  width: 48%;
+  height: 16px;
+  margin: 0;
+}
+
+.skeleton-agendamento-horario {
+  width: 22%;
+  height: 14px;
+  margin: 0;
+}
+
+.skeleton-agendamento-detalhe {
+  width: 72%;
+  height: 12px;
+  margin: 0;
+}
+
+.skeleton-agendamento-detalhe-curto {
+  width: 46%;
+}
+
+.agendamento-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.agendamento-servico {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--app-text-primary);
+  line-height: 1.3;
+}
+
+.agendamento-horario {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-accent);
+
+  ion-icon { font-size: 15px; }
+}
+
+.agendamento-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detalhe {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--app-text-secondary-readable);
+
+  ion-icon { font-size: 15px; color: var(--app-accent); flex-shrink: 0; }
+}
+
+.btn-cancelar {
+  align-self: flex-start;
+  --border-radius: var(--app-radius-control);
+  margin: 2px 0 0;
+  text-transform: none;
+  font-weight: 600;
+}

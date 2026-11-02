@@ -1,0 +1,99 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{ titulo }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="pagina">
+  <ion-refresher slot="fixed" (ionRefresh)="atualizar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (!sessao) {
+    <div class="estado-vazio">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <p>Entre na sua conta para ver seus agendamentos.</p>
+      <ion-button fill="outline" class="btn-estado" (click)="irParaLogin()">Entrar</ion-button>
+    </div>
+  } @else if (carregando) {
+    <div class="lista-agendamentos skeleton-lista-agendamentos" role="status" aria-label="Carregando agendamentos">
+      @for (item of [1, 2, 3]; track item) {
+        <article class="cartao-agendamento skeleton-agendamento" aria-hidden="true">
+          <div class="skeleton-agendamento-topo">
+            <ion-skeleton-text class="skeleton-agendamento-titulo" [animated]="true"></ion-skeleton-text>
+            <ion-skeleton-text class="skeleton-agendamento-horario" [animated]="true"></ion-skeleton-text>
+          </div>
+          <ion-skeleton-text class="skeleton-agendamento-detalhe" [animated]="true"></ion-skeleton-text>
+          <ion-skeleton-text class="skeleton-agendamento-detalhe skeleton-agendamento-detalhe-curto" [animated]="true"></ion-skeleton-text>
+        </article>
+      }
+    </div>
+  } @else if (comErro) {
+    <div class="estado-vazio">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <p>Não foi possível carregar os agendamentos agora.</p>
+      <span>Puxe a tela para baixo para tentar de novo.</span>
+    </div>
+  } @else if (itens.length === 0) {
+    <div class="estado-vazio">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <p>Nenhum agendamento por aqui.</p>
+      @if (tipo === 'cliente') {
+        <span>Escolha um estabelecimento e reserve um horário.</span>
+        <ion-button class="btn-principal" (click)="irParaBarbearias()">Encontrar estabelecimento</ion-button>
+      }
+    </div>
+  } @else {
+    <div class="lista-agendamentos">
+      @for (item of itens; track item.idAgendamento) {
+        <div class="cartao-agendamento">
+          <div class="agendamento-topo">
+            <span class="agendamento-servico">{{ item.servico }}</span>
+            <span class="agendamento-horario">
+              <ion-icon name="time-outline"></ion-icon>
+              {{ item.horario }}
+            </span>
+          </div>
+
+          <div class="agendamento-detalhes">
+            @if (tipo !== 'barbearia') {
+              <span class="detalhe">
+                <ion-icon name="storefront-outline"></ion-icon>
+                {{ item.barbearia }}
+              </span>
+            }
+            @if (tipo !== 'barbeiro') {
+              <span class="detalhe">
+                <ion-icon name="cut-outline"></ion-icon>
+                {{ item.barbeiro }}
+              </span>
+            }
+            @if (tipo !== 'cliente') {
+              <span class="detalhe">
+                <ion-icon name="person-outline"></ion-icon>
+                {{ item.cliente }}
+              </span>
+            }
+          </div>
+
+          @if (tipo === 'cliente') {
+            <ion-button
+              fill="outline"
+              color="danger"
+              size="small"
+              class="btn-cancelar"
+              [disabled]="cancelandoId === item.idAgendamento"
+              (click)="cancelar(item)"
+            >
+              @if (cancelandoId === item.idAgendamento) {
+                <ion-spinner name="crescent"></ion-spinner>
+              } @else {
+                Cancelar
+              }
+            </ion-button>
+          }
+        </div>
+      }
+    </div>
+  }
+</ion-content>

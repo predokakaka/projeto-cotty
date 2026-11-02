@@ -1,0 +1,46 @@
+.conta {
+  padding-top: 28px;
+  gap: 16px;
+}
+
+.conta-topo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+
+  ion-icon { font-size: 64px; color: var(--app-accent); }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; color: var(--app-text-primary); }
+  ion-badge { font-size: 11px; text-transform: none; padding: 4px 8px; }
+}
+
+.conta-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0 8px;
+}
+
+.conta-skeleton-campo {
+  width: 100%;
+  height: 52px;
+  margin: 0;
+  border-radius: var(--app-radius-control);
+}
+
+.conta-aviso { text-align: center; }
+
+.btn-sair {
+  --color: var(--app-accent);
+  --border-color: var(--app-accent);
+  --border-radius: var(--app-radius-control);
+  margin: 0;
+  text-transform: none;
+}
+
+.btn-excluir {
+  margin: 0;
+  font-size: 14px;
+  text-transform: none;
+}

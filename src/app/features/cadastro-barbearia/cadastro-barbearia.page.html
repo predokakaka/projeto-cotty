@@ -1,0 +1,262 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/barbearias"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Novo estabelecimento</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <main class="cadastro-barbearia">
+    <header class="cadastro-intro">
+      <p class="cadastro-etapa">CADASTRO DE ESTABELECIMENTO</p>
+      <h1>Cadastre seu estabelecimento</h1>
+      <p class="cadastro-descricao">
+        Apresente seu estabelecimento e comece a organizar sua presença na plataforma.
+      </p>
+      <p class="campos-obrigatorios">* Campos obrigatórios</p>
+      <div class="cadastro-progresso" role="status" aria-live="polite">
+        <div class="cadastro-progresso-topo">
+          <span>Progresso do cadastro</span>
+          <strong>{{ secoesConcluidas }} de 3 seções completas</strong>
+        </div>
+        <ion-progress-bar
+          [value]="secoesConcluidas / 3"
+          [attr.aria-label]="secoesConcluidas + ' de 3 seções completas'"
+        ></ion-progress-bar>
+      </div>
+    </header>
+
+    <form novalidate (ngSubmit)="validarCadastro()">
+      <section class="form-secao" aria-labelledby="sobre-titulo">
+        <div class="secao-cabecalho">
+          <span class="secao-numero" aria-hidden="true">01</span>
+          <div>
+            <h2 id="sobre-titulo">Sobre o estabelecimento</h2>
+            <p>Conte um pouco sobre seu estabelecimento.</p>
+          </div>
+        </div>
+
+        <div class="secao-campos">
+          <div class="campo">
+            <label id="nome-label" class="campo-label" for="nome">Nome do estabelecimento <span>*</span></label>
+            <ion-input
+              id="nome"
+              name="nome"
+              aria-labelledby="nome-label"
+              [(ngModel)]="form.nome"
+              (ngModelChange)="alterouCampo()"
+              [class.campo-invalido]="tentouValidar && !campoObrigatorioValido(form.nome)"
+              [attr.aria-invalid]="tentouValidar && !campoObrigatorioValido(form.nome)"
+              placeholder="Ex.: Salão Central"
+              autocomplete="organization"
+              required
+            ></ion-input>
+            @if (tentouValidar && !campoObrigatorioValido(form.nome)) {
+              <p class="form-campo-erro">Informe o nome do estabelecimento.</p>
+            }
+          </div>
+
+          <div class="campo">
+            <label id="descricao-label" class="campo-label" for="descricao">Descrição <span>*</span></label>
+            <ion-textarea
+              id="descricao"
+              name="descricao"
+              aria-labelledby="descricao-label"
+              [(ngModel)]="form.descricao"
+              (ngModelChange)="alterouCampo()"
+              [class.campo-invalido]="tentouValidar && !campoObrigatorioValido(form.descricao)"
+              [attr.aria-invalid]="tentouValidar && !campoObrigatorioValido(form.descricao)"
+              placeholder="Apresente os serviços e o ambiente do estabelecimento"
+              [autoGrow]="true"
+              [rows]="3"
+              required
+            ></ion-textarea>
+            @if (tentouValidar && !campoObrigatorioValido(form.descricao)) {
+              <p class="form-campo-erro">Informe uma descrição.</p>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="form-secao" aria-labelledby="localizacao-titulo">
+        <div class="secao-cabecalho">
+          <span class="secao-numero" aria-hidden="true">02</span>
+          <div>
+            <h2 id="localizacao-titulo">Localização</h2>
+            <p>Informe onde o estabelecimento está.</p>
+          </div>
+        </div>
+
+        <div class="secao-campos">
+          <div class="localizacao-grid">
+            <div class="campo">
+              <label id="cep-label" class="campo-label" for="cep">CEP <span>*</span></label>
+              <ion-input
+                id="cep"
+                name="cep"
+                aria-labelledby="cep-label"
+                [(ngModel)]="form.cep"
+                (ionInput)="aoDigitarCep($event)"
+                [class.campo-invalido]="tentouValidar && !cepOk()"
+                [attr.aria-invalid]="tentouValidar && !cepOk()"
+                placeholder="00000-000"
+                inputmode="numeric"
+                autocomplete="postal-code"
+                maxlength="9"
+                required
+              ></ion-input>
+              @if (tentouValidar && !cepOk()) {
+                <p class="form-campo-erro">Informe um CEP válido.</p>
+              }
+            </div>
+
+            <div class="campo">
+              <label id="endereco-label" class="campo-label" for="endereco">Rua ou avenida <span>*</span></label>
+              <ion-input
+                id="endereco"
+                name="endereco"
+                aria-labelledby="endereco-label"
+                [(ngModel)]="form.endereco"
+                (ngModelChange)="alterouCampo()"
+                [class.campo-invalido]="tentouValidar && !campoObrigatorioValido(form.endereco)"
+                [attr.aria-invalid]="tentouValidar && !campoObrigatorioValido(form.endereco)"
+                placeholder="Ex.: Avenida das Flores"
+                autocomplete="address-line1"
+                required
+              ></ion-input>
+              @if (tentouValidar && !campoObrigatorioValido(form.endereco)) {
+                <p class="form-campo-erro">Informe a rua ou avenida.</p>
+              }
+            </div>
+
+            <div class="campo">
+              <label id="numero-label" class="campo-label" for="numero">Número <span>*</span></label>
+              <ion-input
+                id="numero"
+                name="numero"
+                aria-labelledby="numero-label"
+                [(ngModel)]="form.numero"
+                (ngModelChange)="alterouCampo()"
+                [class.campo-invalido]="tentouValidar && !campoObrigatorioValido(form.numero)"
+                [attr.aria-invalid]="tentouValidar && !campoObrigatorioValido(form.numero)"
+                placeholder="123"
+                inputmode="numeric"
+                required
+              ></ion-input>
+              @if (tentouValidar && !campoObrigatorioValido(form.numero)) {
+                <p class="form-campo-erro">Informe o número.</p>
+              }
+            </div>
+          </div>
+
+          <div class="localizacao-grid localizacao-grid-secundaria">
+            <div class="campo">
+              <label id="bairro-label" class="campo-label" for="bairro">Bairro <span>*</span></label>
+              <ion-input
+                id="bairro"
+                name="bairro"
+                aria-labelledby="bairro-label"
+                [(ngModel)]="form.bairro"
+                (ngModelChange)="alterouCampo()"
+                [class.campo-invalido]="tentouValidar && !campoObrigatorioValido(form.bairro)"
+                [attr.aria-invalid]="tentouValidar && !campoObrigatorioValido(form.bairro)"
+                placeholder="Nome do bairro"
+                autocomplete="address-level3"
+                required
+              ></ion-input>
+              @if (tentouValidar && !campoObrigatorioValido(form.bairro)) {
+                <p class="form-campo-erro">Informe o bairro.</p>
+              }
+            </div>
+
+            <div class="campo">
+              <label id="cidade-label" class="campo-label" for="cidade">Cidade <span>*</span></label>
+              <ion-input
+                id="cidade"
+                name="cidade"
+                aria-labelledby="cidade-label"
+                [(ngModel)]="form.cidade"
+                (ngModelChange)="alterouCampo()"
+                [class.campo-invalido]="tentouValidar && !campoObrigatorioValido(form.cidade)"
+                [attr.aria-invalid]="tentouValidar && !campoObrigatorioValido(form.cidade)"
+                placeholder="Nome da cidade"
+                autocomplete="address-level2"
+                required
+              ></ion-input>
+              @if (tentouValidar && !campoObrigatorioValido(form.cidade)) {
+                <p class="form-campo-erro">Informe a cidade.</p>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-secao" aria-labelledby="responsavel-titulo">
+        <div class="secao-cabecalho">
+          <span class="secao-numero" aria-hidden="true">03</span>
+          <div>
+            <h2 id="responsavel-titulo">Dados do responsável</h2>
+            <p>Documento da pessoa responsável pelo estabelecimento.</p>
+          </div>
+        </div>
+
+        <div class="secao-campos">
+          <div class="campo campo-documento">
+            <span id="tipo-documento-label" class="campo-label">Tipo de documento <span>*</span></span>
+            <ion-segment
+              [value]="tipoDocumento"
+              (ionChange)="selecionarTipoDocumento($event)"
+              aria-labelledby="tipo-documento-label"
+            >
+              <ion-segment-button value="cpf">CPF</ion-segment-button>
+              <ion-segment-button value="cnpj">CNPJ</ion-segment-button>
+            </ion-segment>
+          </div>
+
+          <div class="campo">
+            <label id="documento-label" class="campo-label" for="documento">Número do documento <span>*</span></label>
+            <ion-input
+              id="documento"
+              name="cpfCnpj"
+              aria-labelledby="documento-label"
+              [(ngModel)]="form.cpfCnpj"
+              (ionInput)="aoDigitarDocumento($event)"
+              [class.campo-invalido]="tentouValidar && !documentoOk()"
+              [attr.aria-invalid]="tentouValidar && !documentoOk()"
+              [placeholder]="documentoPlaceholder"
+              inputmode="numeric"
+              [maxlength]="tipoDocumento === 'cpf' ? 14 : 18"
+              autocomplete="off"
+              required
+            ></ion-input>
+            @if (tentouValidar && !documentoOk()) {
+              <p class="form-campo-erro">{{ mensagemDocumentoInvalido }}</p>
+            }
+          </div>
+        </div>
+      </section>
+
+      @if (tentouValidar && !dadosValidados) {
+        <p class="cadastro-status cadastro-status-erro" role="alert">
+          Revise os campos destacados para continuar.
+        </p>
+      }
+
+      @if (dadosValidados) {
+        <p class="cadastro-status" role="status">
+          Dados válidos. O cadastro ainda não é enviado nem salvo na plataforma.
+        </p>
+      }
+
+      <div class="cadastro-acoes">
+        <ion-button type="submit" class="botao-cadastro">
+          <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+          Validar dados
+        </ion-button>
+        <p class="form-aviso">O envio do cadastro estará disponível quando a integração for implementada.</p>
+      </div>
+    </form>
+  </main>
+</ion-content>

@@ -1,0 +1,365 @@
+import { Component, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButtons,
+  IonBackButton,
+  IonSpinner,
+  IonSkeletonText,
+  IonImg,
+  IonIcon,
+  IonButton,
+  IonBadge,
+  IonProgressBar,
+  IonRefresher,
+  IonRefresherContent,
+  AlertController,
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import {
+  locationOutline,
+  cutOutline,
+  callOutline,
+  peopleOutline,
+  timeOutline,
+  calendarOutline,
+  personOutline,
+  informationCircleOutline,
+} from 'ionicons/icons';
+import { forkJoin } from 'rxjs';
+import { BarbeariaService } from '../../core/services/barbearia';
+import { ServicoService } from '../../core/services/servico';
+import { HorarioService } from '../../core/services/horario';
+import { BarbeiroService } from '../../core/services/barbeiro';
+import { AgendamentoService } from '../../core/services/agendamento';
+import { LoginService } from '../../core/services/login.service';
+import { AvisoService } from '../../core/services/aviso.service';
+import { Barbearia } from '../../shared/models/modelo.barbearia';
+import { Servico } from '../../shared/models/modelo.servico';
+import { Horario } from '../../shared/models/modelo.horario';
+import { Agendamento, AgendamentoCriacao } from '../../shared/models/modelo.agendamento';
+import { MSG_SEM_CONEXAO, mensagemDeErro } from '../../shared/utils/erro';
+import { listaOuVazia } from '../../shared/utils/rx';
+
+@Component({
+  selector: 'app-barbearia-detail',
+  templateUrl: 'barbearia-detail.page.html',
+  styleUrls: ['barbearia-detail.page.scss'],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonButtons,
+    IonBackButton,
+    IonSpinner,
+    IonSkeletonText,
+    IonImg,
+    IonIcon,
+    IonButton,
+    IonBadge,
+    IonProgressBar,
+    IonRefresher,
+    IonRefresherContent,
+  ],
+})
+export class BarbeariaDetailPage {
+  private route = inject(ActivatedRoute);
+  private barbeariaService = inject(BarbeariaService);
+  private servicoService = inject(ServicoService);
+  private horarioService = inject(HorarioService);
+  private barbeiroService = inject(BarbeiroService);
+  private agendamentoService = inject(AgendamentoService);
+  private loginService = inject(LoginService);
+  private alertController = inject(AlertController);
+  private aviso = inject(AvisoService);
+  private router = inject(Router);
+
+  protected barbearia: Barbearia | null = null;
+  protected servicos: Servico[] = [];
+  // Recalculado só quando muda a seleção ou os dados (e não a cada ciclo de renderização).
+  protected horariosDisponiveis: Horario[] = [];
+
+  protected servicoSelecionado: Servico | null = null;
+  protected horarioSelecionado: Horario | null = null;
+
+  protected carregando = true;
+  protected comErro = false;
+  protected excluindo = false;
+  protected agendando = false;
+
+  private nomesBarbeiros = new Map<number, string>();
+  private todosHorarios: Horario[] = [];
+  // Agendamentos já feitos: escondem horários ocupados (o backend não marca `disponivel = false`).
+  private agendamentosExistentes: Agendamento[] = [];
+
+  constructor() {
+    addIcons({
+      'location-outline': locationOutline,
+      'cut-outline': cutOutline,
+      'call-outline': callOutline,
+      'people-outline': peopleOutline,
+      'time-outline': timeOutline,
+      'calendar-outline': calendarOutline,
+      'person-outline': personOutline,
+      'information-circle-outline': informationCircleOutline,
+    });
+  }
+
+  private get barbeariaId(): number {
+    return Number(this.route.snapshot.paramMap.get('id'));
+  }
+
+  protected get ehDono(): boolean {
+    const sessao = this.loginService.getSessao();
+    return !!this.barbearia && sessao?.tipo === 'barbearia' && sessao.id === this.barbearia.barbearia_id;
+  }
+
+  protected get ehCliente(): boolean {
+    return this.loginService.getSessao()?.tipo === 'cliente';
+  }
+
+  protected get podeConfirmarAgendamento(): boolean {
+    return this.ehCliente && !!this.servicoSelecionado && !!this.horarioSelecionado && !this.agendando;
+  }
+
+  protected get etapaAgendamento(): number {
+    if (!this.servicoSelecionado) return 1;
+    if (!this.horarioSelecionado) return 2;
+    return 3;
+  }
+
+  protected get rotuloProgressoAgendamento(): string {
+    const etapa = this.etapaAgendamento;
+    return etapa === 3
+      ? 'Tudo pronto: confirme seu agendamento.'
+      : `Etapa ${etapa} de 3: ${etapa === 1 ? 'escolha um serviço.' : 'escolha um horário.'}`;
+  }
+
+  public ionViewWillEnter() {
+    if (!this.barbeariaId) {
+      this.carregando = false;
+      this.comErro = true;
+      return;
+    }
+    this.carregarDados();
+  }
+
+  protected atualizar(evento: any) {
+    if (this.barbeariaId) {
+      this.carregarDados(() => evento.target.complete());
+    } else {
+      evento.target.complete();
+    }
+  }
+
+  protected obterNomeBarbeiro(barbeiro_id: number): string {
+    return this.nomesBarbeiros.get(Number(barbeiro_id)) || 'Profissional';
+  }
+
+  protected selecionarServico(servico: Servico) {
+    this.servicoSelecionado = servico;
+    this.horarioSelecionado = null;
+    this.atualizarHorarios();
+  }
+
+  protected selecionarHorario(horario: Horario) {
+    this.horarioSelecionado = horario;
+  }
+
+  protected irParaLogin() {
+    this.router.navigate(['/login']);
+  }
+
+  protected async solicitarConfirmacaoAgendamento() {
+    if (!this.podeConfirmarAgendamento || !this.servicoSelecionado || !this.horarioSelecionado) return;
+
+    const { nome_servico, barbeiro_id } = this.servicoSelecionado;
+    const alerta = await this.alertController.create({
+      header: 'Confirmar agendamento',
+      message: `Deseja agendar "${nome_servico}" com ${this.obterNomeBarbeiro(barbeiro_id)} no horário ${this.horarioSelecionado.horario}?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Confirmar', handler: () => this.executarAgendamento() },
+      ],
+    });
+    await alerta.present();
+  }
+
+  protected async confirmarExclusao() {
+    const alerta = await this.alertController.create({
+      header: 'Excluir conta',
+      message: 'Esta ação não pode ser desfeita. Digite sua senha para confirmar.',
+      inputs: [{
+        name: 'senha',
+        type: 'password',
+        placeholder: 'Sua senha',
+        attributes: { pattern: '\\S*' },
+      }],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Excluir',
+          role: 'destructive',
+          handler: (dados: { senha?: string }) => {
+            if (!dados.senha || /\s/.test(dados.senha)) return false;
+            this.excluir(dados.senha);
+            return true;
+          },
+        },
+      ],
+    });
+    await alerta.present();
+  }
+
+  private carregarDados(aoFinalizar?: () => void) {
+    const barbearia_id = this.barbeariaId;
+    this.carregando = true;
+    this.comErro = false;
+    this.servicoSelecionado = null;
+    this.horarioSelecionado = null;
+
+    forkJoin({
+      barbearia: this.barbeariaService.getBarbeariaById(barbearia_id),
+      servicos: listaOuVazia(this.servicoService.getServicos()),
+      barbeiros: listaOuVazia(this.barbeiroService.getBarbeiros()),
+      horarios: listaOuVazia(this.horarioService.getHorariosPorBarbearia(barbearia_id)),
+      agendamentos: listaOuVazia(this.agendamentoService.getAgendamentos()),
+    }).subscribe({
+      next: ({ barbearia, servicos, barbeiros, horarios, agendamentos }) => {
+        this.carregando = false;
+        this.comErro = !barbearia;
+
+        if (barbearia) {
+          this.barbearia = barbearia;
+          this.servicos = servicos.filter((s) => Number(s.barbearia_id) === barbearia_id);
+          this.nomesBarbeiros = new Map(barbeiros.map((b) => [Number(b.id_barbeiro), b.nome]));
+          this.todosHorarios = horarios;
+          this.agendamentosExistentes = Array.isArray(agendamentos) ? agendamentos : [];
+          this.atualizarHorarios();
+        }
+        aoFinalizar?.();
+      },
+      error: (err) => {
+        console.error('Falha ao carregar dados da barbearia', err);
+        this.carregando = false;
+        this.comErro = true;
+        aoFinalizar?.();
+      },
+    });
+  }
+
+  /** Horários livres do barbeiro do serviço escolhido: marcados como disponíveis e sem agendamento. */
+  private atualizarHorarios() {
+    const servico = this.servicoSelecionado;
+    if (!servico) {
+      this.horariosDisponiveis = [];
+      return;
+    }
+
+    const chave = (barbeiro: number, barbearia: number, horario: string) =>
+      `${Number(barbeiro)}|${Number(barbearia)}|${horario}`;
+    const ocupados = new Set(
+      this.agendamentosExistentes.map((a) => chave(a.barbeiro_id, a.barbearia_id, a.horario_agendado))
+    );
+
+    this.horariosDisponiveis = this.todosHorarios.filter(
+      (h) =>
+        Number(h.barbeiro_id) === Number(servico.barbeiro_id) &&
+        !!h.disponivel &&
+        !ocupados.has(chave(h.barbeiro_id, h.barbearia_id, h.horario))
+    );
+  }
+
+  private executarAgendamento() {
+    const sessao = this.loginService.getSessao();
+    const servico = this.servicoSelecionado;
+    const horario = this.horarioSelecionado;
+
+    if (sessao?.tipo !== 'cliente' || !this.barbearia?.barbearia_id || !servico || !horario) {
+      this.aviso.mostrar('Você precisa estar conectado como cliente para agendar.');
+      return;
+    }
+
+    const dados: AgendamentoCriacao = {
+      cliente_id: sessao.id,
+      servico_id: servico.servico_id,
+      barbeiro_id: servico.barbeiro_id,
+      barbearia_id: this.barbearia.barbearia_id,
+      horario_agendado: horario.horario,
+    };
+
+    this.agendando = true;
+    this.agendamentoService.criarAgendamento(dados).subscribe({
+      next: (criado) => {
+        this.agendando = false;
+        // Guarda o agendamento criado: o horário continua escondido mesmo após recarregar a lista.
+        this.agendamentosExistentes = [...this.agendamentosExistentes, criado];
+        this.horarioSelecionado = null;
+        this.atualizarHorarios();
+        this.aviso.mostrar('Agendamento confirmado com sucesso!');
+      },
+      error: (erro) => {
+        this.agendando = false;
+        this.horarioSelecionado = null;
+        this.recarregarAgendamentos();
+        // P2002 = valor duplicado: pode ser horário já reservado ou conflito de registro.
+        this.aviso.mostrar(
+          mensagemDeErro(
+            erro,
+            'Não foi possível concluir o agendamento. Tente novamente.',
+            'Não foi possível reservar este horário porque ele já está ocupado. Escolha outro.'
+          )
+        );
+      },
+    });
+  }
+
+  /** Busca de novo os agendamentos para refletir o que mudou no servidor. */
+  private recarregarAgendamentos() {
+    this.agendamentoService.getAgendamentos().subscribe({
+      next: (lista) => {
+        this.agendamentosExistentes = Array.isArray(lista) ? lista : [];
+        this.atualizarHorarios();
+      },
+      error: () => {
+        // sem rede: mantém o que já estava na tela
+      },
+    });
+  }
+
+  private excluir(senha: string) {
+    const barbearia = this.barbearia;
+    if (!barbearia?.barbearia_id || !barbearia.email) {
+      this.aviso.mostrar('Não foi possível identificar a conta para excluir.');
+      return;
+    }
+
+    this.excluindo = true;
+    this.barbeariaService.deleteBarbearia(barbearia.barbearia_id, { email: barbearia.email, senha }).subscribe({
+      next: () => {
+        this.excluindo = false;
+        this.loginService.logout();
+        this.router.navigate(['/login'], { replaceUrl: true });
+        this.aviso.mostrar('Conta excluída.');
+      },
+      error: (erro) => {
+        this.excluindo = false;
+        this.aviso.mostrar(this.traduzirErroExclusao(erro));
+      },
+    });
+  }
+
+  private traduzirErroExclusao(erro: unknown): string {
+    const { name, status } = (erro ?? {}) as { name?: string; status?: number };
+    // O backend não responde quando a senha está errada, então o tempo limite estoura.
+    if (name === 'TimeoutError') {
+      return 'Senha incorreta ou servidor sem resposta. Confira a senha e tente de novo.';
+    }
+    if (status === 0) return MSG_SEM_CONEXAO;
+    return 'Não foi possível excluir a conta. Se o estabelecimento tiver serviços ou horários cadastrados, remova-os antes.';
+  }
+}
