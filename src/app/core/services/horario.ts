@@ -1,7 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Horario, HorarioCriacao } from '../../shared/models/modelo.horario';
+import {
+  Horario,
+  HorarioAtualizacao,
+  HorarioCriacao,
+} from '../../shared/models/modelo.horario';
 
 @Injectable({
   providedIn: 'root',
@@ -25,10 +29,7 @@ export class HorarioService {
     return this.api.post<Horario>('horario', horario);
   }
 
-  updateHorario(
-    horario_id: number,
-    dados: { horario: string; disponivel: boolean; barbeiro_id: number; barbearia_id: number }
-  ): Observable<Horario> {
+  updateHorario(horario_id: number, dados: HorarioAtualizacao): Observable<Horario> {
     return this.api.put<Horario>(`horario/${horario_id}`, dados);
   }
 

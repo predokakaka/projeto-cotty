@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
-import { Cliente } from '../../shared/models/modelo.cliente';
+import { Cliente, ClienteAtualizacao, ClienteCriacao } from '../../shared/models/modelo.cliente';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -13,18 +13,16 @@ export class ClienteService {
     return this.api.get<Cliente[]>('cliente');
   }
 
-  getClienteById(cliente_id: number): Observable<Cliente | { error: boolean; message: string } | null> {
+  getClienteById(cliente_id: number): Observable<Cliente> {
     return this.api.get<Cliente>(`cliente/${cliente_id}`);
   }
 
-  createCliente(cliente: Cliente): Observable<Cliente> {
+  createCliente(cliente: ClienteCriacao): Observable<Cliente> {
     return this.api.post<Cliente>('cliente', cliente);
   }
 
-  updateCliente(cliente_id: number, cliente: Partial<Cliente>): Observable<Cliente> {
-    const payload = { ...cliente };
-    delete payload.cliente_id;
-    return this.api.put<Cliente>(`cliente/${cliente_id}`, payload);
+  updateCliente(cliente_id: number, cliente: ClienteAtualizacao): Observable<Cliente> {
+    return this.api.put<Cliente>(`cliente/${cliente_id}`, cliente);
   }
 
   deleteCliente(cliente_id: number): Observable<Cliente> {

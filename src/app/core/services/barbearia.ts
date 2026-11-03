@@ -2,7 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
 import { timeout } from 'rxjs/operators';
-import { Barbearia } from '../../shared/models/modelo.barbearia';
+import {
+  Barbearia,
+  BarbeariaAtualizacao,
+  BarbeariaCriacao,
+  BarbeariaCredenciais,
+} from '../../shared/models/modelo.barbearia';
 
 @Injectable({
   providedIn: 'root',
@@ -15,14 +20,14 @@ export class BarbeariaService {
   }
 
   getBarbeariaById(barbearia_id: number): Observable<Barbearia | null> {
-    return this.api.get<Barbearia>(`barbearia/${barbearia_id}`);
+    return this.api.get<Barbearia | null>(`barbearia/${barbearia_id}`);
   }
 
-  createBarbearia(barbearia: Barbearia): Observable<Barbearia> {
+  createBarbearia(barbearia: BarbeariaCriacao): Observable<Barbearia> {
     return this.api.post<Barbearia>('barbearia', barbearia);
   }
 
-  updateBarbearia(barbearia_id: number, barbearia: Barbearia): Observable<Barbearia> {
+  updateBarbearia(barbearia_id: number, barbearia: BarbeariaAtualizacao): Observable<Barbearia> {
     return this.api.put<Barbearia>(`barbearia/${barbearia_id}`, barbearia);
   }
 
@@ -33,7 +38,7 @@ export class BarbeariaService {
    */
   deleteBarbearia(
     barbearia_id: number,
-    credenciais: { email: string; senha: string }
+    credenciais: BarbeariaCredenciais
   ): Observable<Barbearia> {
     return this.api
       .delete<Barbearia>(`barbearia/${barbearia_id}`, credenciais)

@@ -11,6 +11,8 @@ import {
   IonIcon,
   IonProgressBar,
   IonSpinner,
+  IonSelect,
+  IonSelectOption,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { cutOutline } from 'ionicons/icons';
@@ -20,6 +22,8 @@ import { Sessao } from '../../shared/models/modelo.login';
 import { LoginService } from '../../core/services/login.service';
 import { ClienteService } from '../../core/services/cliente';
 import { BarbeiroService } from '../../core/services/barbeiro';
+import { BarbeariaService } from '../../core/services/barbearia';
+import { Barbearia } from '../../shared/models/modelo.barbearia';
 import { somenteDigitos } from '../../shared/utils/documento';
 import { mensagemDeErro } from '../../shared/utils/erro';
 import {
@@ -48,6 +52,8 @@ const SENHA_MINIMA = 6;
     IonIcon,
     IonProgressBar,
     IonSpinner,
+    IonSelect,
+    IonSelectOption,
   ],
   template: `
     <ion-content [fullscreen]="true" class="pagina">
@@ -86,17 +92,59 @@ const SENHA_MINIMA = 6;
             <p class="form-campo-erro">Informe um e-mail válido (ex: nome&#64;email.com).</p>
           }
 
-          <ion-input
-            label="Telefone / WhatsApp"
-            labelPlacement="floating" fill="outline" type="tel" inputmode="tel" autocomplete="tel"
-            placeholder="12 34 5678900"
-            [maxlength]="limiteCurto"
-            [value]="form.telefone"
-            (ionInput)="aoDigitarTelefone($event)"
-            [class.campo-invalido]="tentouEnviar && form.telefone.trim() && !telefoneOk()"
-          />
-          @if (tentouEnviar && form.telefone.trim() && !telefoneOk()) {
-            <p class="form-campo-erro">Informe um número válido com DDD (ex: (11) 91234-5678).</p>
+          @if (tipo === 'cliente') {
+            <ion-input
+              label="Telefone / WhatsApp"
+              labelPlacement="floating" fill="outline" type="tel" inputmode="tel" autocomplete="tel"
+              placeholder="12 34 5678900"
+              [maxlength]="limiteCurto"
+              [value]="form.telefone"
+              (ionInput)="aoDigitarTelefone($event)"
+              [class.campo-invalido]="tentouEnviar && form.telefone.trim() && !telefoneOk()"
+            />
+            @if (tentouEnviar && form.telefone.trim() && !telefoneOk()) {
+              <p class="form-campo-erro">Informe um número válido com DDD (ex: (11) 91234-5678).</p>
+            }
+          } @else {
+            <ion-input
+              label="Modalidade de atendimento"
+              labelPlacement="floating" fill="outline"
+              placeholder="Ex: presencial"
+              [maxlength]="limiteCurto"
+              [(ngModel)]="form.modalidade_atendimento"
+              [class.campo-invalido]="tentouEnviar && !form.modalidade_atendimento.trim()"
+            />
+            @if (tentouEnviar && !form.modalidade_atendimento.trim()) {
+              <p class="form-campo-erro">Informe a modalidade de atendimento.</p>
+            }
+
+            @if (carregandoBarbearias) {
+              <p class="form-campo-ajuda">Carregando estabelecimentos...</p>
+            } @else if (barbearias.length) {
+              <ion-select
+                label="Estabelecimento"
+                labelPlacement="floating"
+                fill="outline"
+                interface="popover"
+                placeholder="Selecione um estabelecimento"
+                [(ngModel)]="form.barbearia_id"
+                [class.campo-invalido]="tentouEnviar && !form.barbearia_id"
+              >
+                @for (barbearia of barbearias; track barbearia.barbearia_id) {
+                  <ion-select-option [value]="barbearia.barbearia_id">
+                    {{ barbearia.nomeFantasia }} · {{ barbearia.endereco }}
+                  </ion-select-option>
+                }
+              </ion-select>
+              @if (tentouEnviar && !form.barbearia_id) {
+                <p class="form-campo-erro">Selecione um estabelecimento.</p>
+              }
+            } @else if (erroCarregandoBarbearias) {
+              <p class="form-campo-erro" role="alert">Não foi possível carregar os estabelecimentos.</p>
+              <ion-button fill="clear" (click)="carregarBarbearias()">Tentar novamente</ion-button>
+            } @else {
+              <p class="form-campo-ajuda">Não há estabelecimentos disponíveis para vincular seu cadastro.</p>
+            }
           }
 
           <ion-input
@@ -208,6 +256,7 @@ export class CadastroPage {
   private loginService = inject(LoginService);
   private clienteService = inject(ClienteService);
   private barbeiroService = inject(BarbeiroService);
+  private barbeariaService = inject(BarbeariaService);
 
   protected readonly limiteCurto = LIMITE_CURTO;
   protected readonly senhaMinima = SENHA_MINIMA;
@@ -217,6 +266,9 @@ export class CadastroPage {
   protected tentouEnviar = false;
   protected mensagemErro = '';
   protected form = this.novoForm();
+  protected barbearias: Barbearia[] = [];
+  protected carregandoBarbearias = false;
+  protected erroCarregandoBarbearias = false;
 
   constructor() {
     addIcons({ 'cut-outline': cutOutline });
@@ -233,6 +285,26 @@ export class CadastroPage {
     this.tipo = evento.detail.value as TipoCadastro;
     this.mensagemErro = '';
     this.tentouEnviar = false;
+    if (this.tipo === 'barbeiro') {
+      this.carregarBarbearias();
+    }
+  }
+
+  protected carregarBarbearias() {
+    if (this.carregandoBarbearias) return;
+    this.carregandoBarbearias = true;
+    this.erroCarregandoBarbearias = false;
+
+    this.barbeariaService.getBarbearias().subscribe({
+      next: (barbearias) => {
+        this.barbearias = barbearias;
+        this.carregandoBarbearias = false;
+      },
+      error: () => {
+        this.erroCarregandoBarbearias = true;
+        this.carregandoBarbearias = false;
+      },
+    });
   }
 
   protected aoDigitarTelefone(evento: any) {
@@ -349,8 +421,9 @@ export class CadastroPage {
         nome: f.nome.trim(),
         email,
         senha: f.senha,
-        celular,
         foto: null,
+        modalidade_atendimento: f.modalidade_atendimento.trim(),
+        barbearia_id: f.barbearia_id!,
       })
       .pipe(map((b) => ({ tipo: 'barbeiro', id: b.id_barbeiro!, nome: b.nome })));
   }
@@ -359,7 +432,13 @@ export class CadastroPage {
     const f = this.form;
 
     // Campos obrigatórios
-    if (!f.nome.trim() || !f.email.trim() || !f.telefone.trim() || !f.senha || !f.confirmarSenha) {
+    if (
+      !f.nome.trim() ||
+      !f.email.trim() ||
+      (this.tipo === 'cliente' && !f.telefone.trim()) ||
+      !f.senha ||
+      !f.confirmarSenha
+    ) {
       return 'Preencha todos os campos.';
     }
 
@@ -382,9 +461,17 @@ export class CadastroPage {
       return `O e-mail pode ter no máximo ${LIMITE_CURTO} caracteres.`;
     }
 
-    // Telefone brasileiro
-    if (!celularValido(f.telefone)) {
-      return 'Informe um número de telefone válido com DDD (10 ou 11 dígitos).';
+    if (this.tipo === 'cliente') {
+      if (!celularValido(f.telefone)) {
+        return 'Informe um número de telefone válido com DDD (10 ou 11 dígitos).';
+      }
+    } else {
+      if (!f.modalidade_atendimento.trim()) {
+        return 'Informe a modalidade de atendimento.';
+      }
+      if (!f.barbearia_id || !this.barbearias.some((barbearia) => barbearia.barbearia_id === f.barbearia_id)) {
+        return 'Selecione um estabelecimento válido.';
+      }
     }
 
     // Senha
@@ -414,6 +501,8 @@ export class CadastroPage {
       nome: '',
       email: '',
       telefone: '',
+      modalidade_atendimento: '',
+      barbearia_id: null as number | null,
       senha: '',
       confirmarSenha: '',
     };

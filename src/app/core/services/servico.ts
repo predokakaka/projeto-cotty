@@ -1,7 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Servico, ServicoCriacao } from '../../shared/models/modelo.servico';
+import {
+  Servico,
+  ServicoAtualizacao,
+  ServicoCriacao,
+} from '../../shared/models/modelo.servico';
 
 @Injectable({
   providedIn: 'root',
@@ -18,10 +22,7 @@ export class ServicoService {
   }
 
   // O backend lê barbearia_id do body para checar nome duplicado, então ele precisa ir junto.
-  updateServico(
-    servico_id: number,
-    dados: { nome_servico: string; descricao_servico?: string | null; barbearia_id: number }
-  ): Observable<Servico> {
+  updateServico(servico_id: number, dados: ServicoAtualizacao): Observable<Servico> {
     return this.api.put<Servico>(`servico/${servico_id}`, dados);
   }
 

@@ -58,10 +58,10 @@
             }
           </div>
 
-          @if (barbearia.cidade || barbearia.endereco) {
+          @if (barbearia.endereco) {
             <div class="perfil-localizacao">
               <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-              <span>{{ barbearia.endereco }}@if (barbearia.endereco && barbearia.cidade) { · }{{ barbearia.cidade }}</span>
+              <span>{{ barbearia.endereco }}</span>
             </div>
           }
         </div>

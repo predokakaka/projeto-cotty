@@ -12,3 +12,5 @@ export interface HorarioCriacao {
   horario: string;
   disponivel: boolean;
 }
+
+export type HorarioAtualizacao = HorarioCriacao;

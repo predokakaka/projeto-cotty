@@ -207,10 +207,9 @@ export class BarbeariasPage {
       const profissionais = servicosDaBarbearia
         .map((servico) => nomesBarbeiros.get(Number(servico.barbeiro_id)))
         .filter((nome): nome is string => Boolean(nome));
-      const localizacao = [barbearia.cidade, barbearia.endereco].filter(Boolean).join(' · ');
+      const localizacao = barbearia.endereco;
       const busca = [
         barbearia.nomeFantasia,
-        barbearia.cidade,
         barbearia.endereco,
         ...categorias,
         ...profissionais,

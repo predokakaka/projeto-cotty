@@ -10,3 +10,5 @@ export interface AgendamentoCriacao {
 export interface Agendamento extends AgendamentoCriacao {
   idAgendamento: number;
 }
+
+export type AgendamentoAtualizacao = AgendamentoCriacao;

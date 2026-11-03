@@ -1,11 +1,9 @@
-import { inject, Injectable } from '@angular/core';
-import { forkJoin, Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { Observable, throwError } from 'rxjs';
 import { Login, Sessao } from '../../shared/models/modelo.login';
-import { ClienteService } from './cliente';
-import { BarbeiroService } from './barbeiro';
 
 export const ERRO_CREDENCIAIS = 'CREDENCIAIS_INVALIDAS';
+export const ERRO_AUTENTICACAO_NAO_DISPONIVEL = 'AUTENTICACAO_NAO_DISPONIVEL';
 
 const CHAVE_SESSAO = 'sessao';
 const CHAVE_TENTATIVAS_LOGIN_USUARIO = 'tentativas-login-usuario';
@@ -19,58 +17,17 @@ interface EstadoTentativasLogin {
 }
 
 /**
- * Login feito no frontend.
- *
- * O backend ainda não tem rota POST /login, então as credenciais são conferidas
- * contra as listas que ele já expõe (GET /cliente e /barbeiro).
- * Quando o backend ganhar um /login real, só o método loginUsuario abaixo
- * precisa mudar para um this.http.post(...) — a página e o guard continuam iguais.
+ * O backend não oferece endpoint de autenticação e os GET públicos não retornam
+ * senha. O login só pode ser habilitado quando o backend fornecer essa operação.
  */
 @Injectable({ providedIn: 'root' })
 export class LoginService {
-  private clienteService = inject(ClienteService);
-  private barbeiroService = inject(BarbeiroService);
-
   private sessao: Sessao | null = this.lerSessaoSalva();
   private tentativasLoginUsuario: EstadoTentativasLogin = { falhas: [], bloqueadoAte: 0 };
 
-  /** Usuário = cliente ou barbeiro. Confere nome, e-mail e senha do cadastro. */
-  public loginUsuario(login: Login): Observable<Sessao> {
-    const nome = (login.nome ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
-    const email = login.email.trim().toLowerCase();
-
-    return forkJoin([
-      this.clienteService.getClientes(),
-      this.barbeiroService.getBarbeiros(),
-    ]).pipe(
-      map(([clientes, barbeiros]): Sessao => {
-        const cliente = clientes.find(
-          (c) =>
-            c.nome.trim().replace(/\s+/g, ' ').toLowerCase() === nome &&
-            c.email.trim().toLowerCase() === email &&
-            c.senha === login.password
-        );
-        if (cliente) {
-          return { tipo: 'cliente', id: cliente.cliente_id!, nome: cliente.nome };
-        }
-
-        const barbeiro = barbeiros.find(
-          (b) =>
-            b.nome.trim().replace(/\s+/g, ' ').toLowerCase() === nome &&
-            b.email.trim().toLowerCase() === email &&
-            b.senha === login.password
-        );
-        if (barbeiro) {
-          return { tipo: 'barbeiro', id: barbeiro.id_barbeiro!, nome: barbeiro.nome };
-        }
-
-        throw new Error(ERRO_CREDENCIAIS);
-      }),
-      tap((sessao) => {
-        this.limparTentativasLoginUsuario();
-        this.salvarSessao(sessao);
-      })
-    );
+  /** O contrato atual do backend não permite validar credenciais com segurança. */
+  public loginUsuario(_login: Login): Observable<Sessao> {
+    return throwError(() => new Error(ERRO_AUTENTICACAO_NAO_DISPONIVEL));
   }
 
   public segundosBloqueioLoginUsuario(): number {

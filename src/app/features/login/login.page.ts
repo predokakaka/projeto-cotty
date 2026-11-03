@@ -13,7 +13,11 @@ import {
 import { addIcons } from 'ionicons';
 import { cutOutline } from 'ionicons/icons';
 import { Login, Sessao } from '../../shared/models/modelo.login';
-import { ERRO_CREDENCIAIS, LoginService } from '../../core/services/login.service';
+import {
+  ERRO_AUTENTICACAO_NAO_DISPONIVEL,
+  ERRO_CREDENCIAIS,
+  LoginService,
+} from '../../core/services/login.service';
 
 @Component({
   selector: 'app-login',
@@ -160,6 +164,9 @@ export class LoginPage {
   }
 
   private traduzirErro(erro: unknown): string {
+    if (erro instanceof Error && erro.message === ERRO_AUTENTICACAO_NAO_DISPONIVEL) {
+      return 'O servidor ainda não oferece autenticação. O cadastro continua disponível; solicite o endpoint de login ao backend.';
+    }
     if (erro instanceof HttpErrorResponse) {
       return 'Não foi possível falar com o servidor. Verifique sua conexão e tente de novo.';
     }

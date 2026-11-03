@@ -2,12 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from './api.service';
-import { ServicoAutonomo, ServicoAutonomoCriacao } from '../../shared/models/modelo.servico-autonomo';
+import {
+  ServicoAutonomo,
+  ServicoAutonomoAtualizacao,
+  ServicoAutonomoCriacao,
+} from '../../shared/models/modelo.servico-autonomo';
 
 /**
  * Serviços que o barbeiro oferece por conta própria (sem vínculo com barbearia).
- * Rotas no backend: /servico-autonomo (GET, POST) e /servico-autonomo/:idServico_autonomo (GET, PUT, DELETE).
- * O backend precisa registrar essas rotas no index.ts para as chamadas funcionarem.
+ * As rotas existem no backend, mas ainda não são montadas no src/index.ts.
  */
 @Injectable({
   providedIn: 'root',
@@ -34,10 +37,7 @@ export class ServicoAutonomoService {
     return this.api.post<ServicoAutonomo>('servico-autonomo', servico);
   }
 
-  updateServicoAutonomo(
-    idServico_autonomo: number,
-    dados: { nome_servico: string; descricao_servico?: string | null }
-  ): Observable<ServicoAutonomo> {
+  updateServicoAutonomo(idServico_autonomo: number, dados: ServicoAutonomoAtualizacao): Observable<ServicoAutonomo> {
     return this.api.put<ServicoAutonomo>(`servico-autonomo/${idServico_autonomo}`, dados);
   }
 

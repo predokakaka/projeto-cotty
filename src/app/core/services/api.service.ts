@@ -27,7 +27,9 @@ export class ApiService {
   }
 
   private url(path: string): string {
-    return `${environment.api}/${path}`;
+    const base = environment.api.replace(/\/+$/, '');
+    const recurso = path.replace(/^\/+/, '');
+    return `${base}/${recurso}`;
   }
 
   private registrarErro<T>(metodo: string, path: string, requisicao: Observable<T>): Observable<T> {

@@ -12,3 +12,9 @@ export interface ServicoCriacao {
   nome_servico: string;
   descricao_servico?: string | null;
 }
+
+export interface ServicoAtualizacao {
+  nome_servico: string;
+  descricao_servico?: string | null;
+  barbearia_id: number;
+}
