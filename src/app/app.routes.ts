@@ -6,7 +6,7 @@ import { visitanteGuard } from './core/guards/visitante-guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/tabs/barbearias',
+    redirectTo: '/sobre-nos',
     pathMatch: 'full',
   },
   {
