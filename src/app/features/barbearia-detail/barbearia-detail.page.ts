@@ -31,7 +31,7 @@ import {
   personOutline,
   informationCircleOutline,
 } from 'ionicons/icons';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { BarbeariaService } from '../../core/services/barbearia';
 import { ServicoService } from '../../core/services/servico';
 import { HorarioService } from '../../core/services/horario';
@@ -43,9 +43,8 @@ import { Barbearia } from '../../shared/models/modelo.barbearia';
 import { Barbeiro } from '../../shared/models/modelo.barbeiro';
 import { Servico } from '../../shared/models/modelo.servico';
 import { Horario } from '../../shared/models/modelo.horario';
-import { Agendamento, AgendamentoCriacao } from '../../shared/models/modelo.agendamento';
+import { AgendamentoCriacao } from '../../shared/models/modelo.agendamento';
 import { MSG_SEM_CONEXAO, mensagemDeErro } from '../../shared/utils/erro';
-import { listaOuVazia } from '../../shared/utils/rx';
 
 @Component({
   selector: 'app-barbearia-detail',
@@ -90,14 +89,14 @@ export class BarbeariaDetailPage {
   protected barbearia: Barbearia | null = null;
   protected barbeiros: Barbeiro[] = [];
   protected servicos: Servico[] = [];
-  // Recalculado só quando muda a seleção ou os dados (e não a cada ciclo de renderização).
-  protected horariosDisponiveis: Horario[] = [];
+  protected horariosDoProfissional: Horario[] = [];
 
   protected servicoSelecionado: Servico | null = null;
   protected horarioSelecionado: Horario | null = null;
 
   protected carregando = true;
   protected comErro = false;
+  protected mensagemErro = 'Não foi possível carregar os dados deste estabelecimento.';
   protected excluindo = false;
   protected agendando = false;
 
@@ -105,8 +104,6 @@ export class BarbeariaDetailPage {
   private todosHorarios: Horario[] = [];
   private perfilCarregadoId: number | null = null;
   private requisicaoEmAndamento = false;
-  // Agendamentos já feitos: escondem horários ocupados (o backend não marca `disponivel = false`).
-  private agendamentosExistentes: Agendamento[] = [];
 
   constructor() {
     addIcons({
@@ -204,6 +201,15 @@ export class BarbeariaDetailPage {
   }
 
   protected selecionarServico(servico: Servico) {
+    if (
+      Number(servico.barbearia_id) !== this.barbeariaId ||
+      !this.barbeiros.some(
+        (barbeiro) => Number(barbeiro.id_barbeiro) === Number(servico.barbeiro_id)
+      )
+    ) {
+      return;
+    }
+
     this.servicoSelecionado = servico;
     this.horarioSelecionado = null;
     this.atualizarHorarios();
@@ -211,6 +217,16 @@ export class BarbeariaDetailPage {
   }
 
   protected selecionarHorario(horario: Horario) {
+    const servico = this.servicoSelecionado;
+    if (
+      !servico ||
+      horario.disponivel !== true ||
+      Number(horario.barbeiro_id) !== Number(servico.barbeiro_id) ||
+      Number(horario.barbearia_id) !== Number(servico.barbearia_id)
+    ) {
+      return;
+    }
+
     this.horarioSelecionado = horario;
   }
 
@@ -296,20 +312,17 @@ export class BarbeariaDetailPage {
     this.requisicaoEmAndamento = true;
     this.carregando = true;
     this.comErro = false;
+    this.mensagemErro = 'Não foi possível carregar os dados deste estabelecimento.';
     this.servicoSelecionado = null;
     this.horarioSelecionado = null;
 
     forkJoin({
       barbearia: this.barbeariaService.getBarbeariaById(barbearia_id),
-      servicos: listaOuVazia(this.servicoService.getServicos()),
+      servicos: this.servicoService.getServicos(),
       barbeiros: this.barbeiroService.getBarbeiros(),
-      horarios: listaOuVazia(this.horarioService.getHorariosPorBarbearia(barbearia_id)),
-      agendamentos:
-        this.loginService.getSessao()?.tipo === 'cliente'
-          ? listaOuVazia(this.agendamentoService.getAgendamentos())
-          : of([] as Agendamento[]),
+      horarios: this.horarioService.getHorariosPorBarbearia(barbearia_id),
     }).subscribe({
-      next: ({ barbearia, servicos, barbeiros, horarios, agendamentos }) => {
+      next: ({ barbearia, servicos, barbeiros, horarios }) => {
         this.carregando = false;
         this.requisicaoEmAndamento = false;
         this.comErro = false;
@@ -329,7 +342,6 @@ export class BarbeariaDetailPage {
             this.barbeiros.map((barbeiro) => [Number(barbeiro.id_barbeiro), barbeiro.nome])
           );
           this.todosHorarios = horarios;
-          this.agendamentosExistentes = Array.isArray(agendamentos) ? agendamentos : [];
           this.perfilCarregadoId = barbearia_id;
           this.atualizarHorarios();
           this.restaurarSelecaoAgendamento();
@@ -345,6 +357,10 @@ export class BarbeariaDetailPage {
         this.carregando = false;
         this.requisicaoEmAndamento = false;
         this.comErro = true;
+        this.mensagemErro = mensagemDeErro(
+          err,
+          'Não foi possível carregar os dados deste estabelecimento. Tente novamente.'
+        );
         this.barbearia = null;
         this.perfilCarregadoId = null;
         aoFinalizar?.();
@@ -373,28 +389,25 @@ export class BarbeariaDetailPage {
     this.servicoSelecionado = servico;
     this.atualizarHorarios();
     this.horarioSelecionado =
-      this.horariosDisponiveis.find((item) => Number(item.horario_id) === Number(horarioId)) ?? null;
+      this.horariosDoProfissional.find(
+        (item) =>
+          Number(item.horario_id) === Number(horarioId) &&
+          item.disponivel === true
+      ) ?? null;
   }
 
-  /** Horários livres do barbeiro do serviço escolhido: marcados como disponíveis e sem agendamento. */
+  /** Exibe todos os horários cadastrados para o estabelecimento e profissional selecionados. */
   private atualizarHorarios() {
     const servico = this.servicoSelecionado;
-    if (!servico) {
-      this.horariosDisponiveis = [];
+    if (!servico || Number(servico.barbearia_id) !== this.barbeariaId) {
+      this.horariosDoProfissional = [];
       return;
     }
 
-    const chave = (barbeiro: number, barbearia: number, horario: string) =>
-      `${Number(barbeiro)}|${Number(barbearia)}|${horario}`;
-    const ocupados = new Set(
-      this.agendamentosExistentes.map((a) => chave(a.barbeiro_id, a.barbearia_id, a.horario_agendado))
-    );
-
-    this.horariosDisponiveis = this.todosHorarios.filter(
+    this.horariosDoProfissional = this.todosHorarios.filter(
       (h) =>
         Number(h.barbeiro_id) === Number(servico.barbeiro_id) &&
-        !!h.disponivel &&
-        !ocupados.has(chave(h.barbeiro_id, h.barbearia_id, h.horario))
+        Number(h.barbearia_id) === Number(servico.barbearia_id)
     );
   }
 
@@ -403,7 +416,14 @@ export class BarbeariaDetailPage {
     const servico = this.servicoSelecionado;
     const horario = this.horarioSelecionado;
 
-    if (sessao?.tipo !== 'cliente' || !this.barbearia?.barbearia_id || !servico || !horario) {
+    if (
+      sessao?.tipo !== 'cliente' ||
+      !this.barbearia?.barbearia_id ||
+      !servico ||
+      !horario ||
+      Number(servico.barbearia_id) !== Number(this.barbearia.barbearia_id) ||
+      horario.disponivel !== true
+    ) {
       this.aviso.mostrar('Você precisa estar conectado como cliente para agendar.');
       return;
     }
@@ -412,24 +432,20 @@ export class BarbeariaDetailPage {
       cliente_id: sessao.id,
       servico_id: servico.servico_id,
       barbeiro_id: servico.barbeiro_id,
-      barbearia_id: this.barbearia.barbearia_id,
+      barbearia_id: servico.barbearia_id,
       horario_agendado: horario.horario,
     };
 
     this.agendando = true;
     this.agendamentoService.criarAgendamento(dados).subscribe({
-      next: (criado) => {
+      next: () => {
         this.agendando = false;
-        // Guarda o agendamento criado: o horário continua escondido mesmo após recarregar a lista.
-        this.agendamentosExistentes = [...this.agendamentosExistentes, criado];
         this.horarioSelecionado = null;
-        this.atualizarHorarios();
         this.aviso.mostrar('Agendamento confirmado com sucesso!');
       },
       error: (erro) => {
         this.agendando = false;
         this.horarioSelecionado = null;
-        this.recarregarAgendamentos();
         // P2002 = valor duplicado: pode ser horário já reservado ou conflito de registro.
         this.aviso.mostrar(
           mensagemDeErro(
@@ -438,19 +454,6 @@ export class BarbeariaDetailPage {
             'Não foi possível reservar este horário porque ele já está ocupado. Escolha outro.'
           )
         );
-      },
-    });
-  }
-
-  /** Busca de novo os agendamentos para refletir o que mudou no servidor. */
-  private recarregarAgendamentos() {
-    this.agendamentoService.getAgendamentos().subscribe({
-      next: (lista) => {
-        this.agendamentosExistentes = Array.isArray(lista) ? lista : [];
-        this.atualizarHorarios();
-      },
-      error: () => {
-        // sem rede: mantém o que já estava na tela
       },
     });
   }

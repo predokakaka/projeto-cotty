@@ -33,7 +33,7 @@
   } @else if (comErro) {
     <div class="estado-vazio">
       <ion-icon name="cut-outline"></ion-icon>
-      <p>Não foi possível carregar os dados deste estabelecimento.</p>
+      <p>{{ mensagemErro }}</p>
       <ion-button fill="outline" (click)="buscarNovamente()">Tentar novamente</ion-button>
     </div>
   } @else if (!barbearia) {
@@ -239,30 +239,47 @@
             </div>
 
             <div class="horarios-bloco">
-              <span class="horarios-titulo">Horários disponíveis</span>
-              @if (ehVisitante) {
-                <p class="aviso-disponibilidade">
-                  A disponibilidade será confirmada quando você entrar para concluir o agendamento.
-                </p>
-              }
+              <span class="horarios-titulo">Horários cadastrados</span>
+              <p class="aviso-disponibilidade">
+                A disponibilidade reflete o cadastro e não garante que o horário ainda esteja livre.
+                O backend ainda não valida todos os conflitos de agendamento.
+              </p>
 
-              @if (horariosDisponiveis.length === 0) {
+              @if (horariosDoProfissional.length === 0) {
                 <div class="secao-vazia-horarios">
                   <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
-                  <p>Nenhum horário disponível para este profissional no momento.</p>
+                  <p>Nenhum horário cadastrado para este profissional neste estabelecimento.</p>
                 </div>
               } @else {
                 <div class="grade-horarios">
-                  @for (item of horariosDisponiveis; track item.horario_id) {
+                  @for (item of horariosDoProfissional; track item.horario_id) {
                     <button
                       type="button"
                       class="botao-horario"
                       [class.selecionado]="horarioSelecionado?.horario_id === item.horario_id"
+                      [disabled]="item.disponivel !== true"
+                      [attr.aria-label]="
+                        item.horario + ': ' +
+                        (horarioSelecionado?.horario_id === item.horario_id
+                          ? 'Selecionado'
+                          : item.disponivel === true
+                            ? 'Disponível'
+                            : 'Indisponível')
+                      "
                       [attr.aria-pressed]="horarioSelecionado?.horario_id === item.horario_id"
                       (click)="selecionarHorario(item)"
                     >
                       <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
                       <span>{{ item.horario }}</span>
+                      <span class="status-horario">
+                        @if (horarioSelecionado?.horario_id === item.horario_id) {
+                          Selecionado
+                        } @else if (item.disponivel === true) {
+                          Disponível
+                        } @else {
+                          Indisponível
+                        }
+                      </span>
                     </button>
                   }
                 </div>

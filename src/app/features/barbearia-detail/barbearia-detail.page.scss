@@ -468,11 +468,12 @@
 }
 
 .botao-horario {
-  min-height: 44px;
+  min-height: 68px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   padding: 9px 8px;
   color: var(--app-text-primary);
   background: var(--app-background);
@@ -486,13 +487,30 @@
   &:hover, &:focus-visible { border-color: var(--app-accent); }
   &:focus-visible { outline: 3px solid rgba(var(--app-primary-rgb), 0.28); outline-offset: 2px; }
 
+  &:disabled {
+    color: var(--app-text-secondary-readable);
+    background: var(--app-surface);
+    cursor: not-allowed;
+    opacity: 0.72;
+
+    ion-icon { color: var(--app-text-secondary-readable); }
+  }
+
   &.selecionado {
     color: var(--app-contrast);
     background: var(--app-primary);
     border-color: var(--app-primary);
     font-weight: 600;
     ion-icon { color: var(--app-contrast); }
+
+    .status-horario { color: var(--app-contrast); }
   }
+}
+
+.status-horario {
+  color: var(--app-text-secondary-readable);
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .secao-agendamento {
