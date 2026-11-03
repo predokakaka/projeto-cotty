@@ -412,7 +412,19 @@ export class CadastroPage {
           senha: f.senha,
           celular,
         })
-        .pipe(map((c) => ({ tipo: 'cliente', id: c.cliente_id!, nome: c.nome })));
+        .pipe(
+          map((cliente) => {
+            if (
+              !cliente ||
+              !Number.isSafeInteger(cliente.cliente_id) ||
+              cliente.cliente_id <= 0 ||
+              typeof cliente.nome !== 'string'
+            ) {
+              throw new Error('Resposta inesperada ao criar cliente.');
+            }
+            return { tipo: 'cliente', id: cliente.cliente_id, nome: cliente.nome };
+          })
+        );
     }
 
     // Barbeiro
@@ -425,7 +437,20 @@ export class CadastroPage {
         modalidade_atendimento: f.modalidade_atendimento.trim(),
         barbearia_id: f.barbearia_id!,
       })
-      .pipe(map((b) => ({ tipo: 'barbeiro', id: b.id_barbeiro!, nome: b.nome })));
+      .pipe(
+        map((barbeiro) => {
+          if (
+            !barbeiro ||
+            !Number.isSafeInteger(barbeiro.id_barbeiro) ||
+            barbeiro.id_barbeiro <= 0 ||
+            typeof barbeiro.nome !== 'string' ||
+            Number(barbeiro.barbearia_id) !== Number(f.barbearia_id)
+          ) {
+            throw new Error('Resposta inesperada ao criar profissional.');
+          }
+          return { tipo: 'barbeiro', id: barbeiro.id_barbeiro, nome: barbeiro.nome };
+        })
+      );
   }
 
   private validar(): string | null {

@@ -59,6 +59,17 @@
               [(ngModel)]="form.celular"
               (keyup.enter)="salvar()"
             />
+          } @else {
+            <ion-input
+              label="Nova senha (opcional)"
+              labelPlacement="floating"
+              fill="outline"
+              type="password"
+              autocomplete="new-password"
+              [maxlength]="limiteCurto"
+              [(ngModel)]="form.senha"
+              (keyup.enter)="salvar()"
+            />
           }
         </section>
 

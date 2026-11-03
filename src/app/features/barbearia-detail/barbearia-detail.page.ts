@@ -353,7 +353,6 @@ export class BarbeariaDetailPage {
         aoFinalizar?.();
       },
       error: (err) => {
-        console.error('Falha ao carregar dados da barbearia', err);
         this.carregando = false;
         this.requisicaoEmAndamento = false;
         this.comErro = true;

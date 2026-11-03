@@ -236,7 +236,6 @@ export class AgendamentosPage {
         aoFinalizar?.();
       },
       error: (err) => {
-        console.error('Falha ao carregar agendamentos', err);
         this.comErro = true;
         this.mensagemErro = mensagemDeErro(
           err,

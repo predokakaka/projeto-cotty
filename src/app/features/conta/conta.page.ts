@@ -69,7 +69,7 @@ export class ContaPage {
   protected readonly limiteCurto = LIMITE_CURTO;
 
   protected sessao: Sessao | null = null;
-  protected form = { nome: '', email: '', celular: '' };
+  protected form = { nome: '', email: '', celular: '', senha: '' };
   protected carregando = false;
   protected comErro = false;
   protected salvando = false;
@@ -152,6 +152,7 @@ export class ContaPage {
         : this.barbeiroService.updateBarbeiro(sessao.id, {
             nome,
             email,
+            ...(this.form.senha ? { senha: this.form.senha } : {}),
             foto: this.barbeiroAtual?.foto ?? null,
           });
 
@@ -160,6 +161,7 @@ export class ContaPage {
         this.salvando = false;
         this.form.nome = nome;
         this.form.email = email;
+        this.form.senha = '';
         this.loginService.atualizarNomeSessao(nome);
         this.sessao = this.loginService.getSessao();
         this.aviso.mostrar('Dados atualizados.');
@@ -212,10 +214,12 @@ export class ContaPage {
         this.router.navigate(['/login'], { replaceUrl: true });
         this.aviso.mostrar('Conta excluída.');
       },
-      error: () => {
+      error: (erro) => {
         this.excluindo = false;
-        this.mensagemErro =
-          'Não foi possível excluir a conta. Se houver agendamentos ou serviços vinculados, remova-os antes.';
+        this.mensagemErro = mensagemDeErro(
+          erro,
+          'Não foi possível excluir a conta. Ela pode ter agendamentos ou serviços vinculados.'
+        );
       },
     });
   }
@@ -227,7 +231,12 @@ export class ContaPage {
         this.carregando = false;
         if (resposta && 'email' in resposta) {
           const cliente = resposta as Cliente;
-          this.form = { nome: cliente.nome, email: cliente.email, celular: cliente.celular ?? '' };
+          this.form = {
+            nome: cliente.nome,
+            email: cliente.email,
+            celular: cliente.celular ?? '',
+            senha: '',
+          };
         } else {
           this.comErro = true;
         }
@@ -247,7 +256,7 @@ export class ContaPage {
         const barbeiro = lista.find((b) => Number(b.id_barbeiro) === id_barbeiro);
         if (barbeiro) {
           this.barbeiroAtual = barbeiro;
-          this.form = { nome: barbeiro.nome, email: barbeiro.email, celular: '' };
+          this.form = { nome: barbeiro.nome, email: barbeiro.email, celular: '', senha: '' };
         } else {
           this.comErro = true;
         }
@@ -267,6 +276,9 @@ export class ContaPage {
       return `Nome e e-mail podem ter no máximo ${LIMITE_CURTO} caracteres.`;
     }
     if (sessao.tipo === 'cliente' && !celularValido(f.celular)) return 'Informe um celular válido, com DDD.';
+    if (sessao.tipo === 'barbeiro' && f.senha && f.senha.length < 6) {
+      return 'A nova senha precisa ter pelo menos 6 caracteres.';
+    }
     return null;
   }
 }

@@ -2,37 +2,56 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 export const MSG_SEM_CONEXAO = 'Não foi possível falar com o servidor. Verifique sua conexão e tente de novo.';
 
-/**
- * Texto de erro que o backend manda no corpo da resposta. Os controllers respondem de três
- * jeitos: string pura, { message } ou { messsage } (com três "s", typo que existe em vários catch).
- */
-function textoDoBackend(erro: HttpErrorResponse): string | null {
+function detalheDoBackend(erro: HttpErrorResponse): string {
   const corpo = erro.error as unknown;
-  if (typeof corpo === 'string') return corpo.trim() || null;
+  if (typeof corpo === 'string') return corpo.toLocaleLowerCase('pt-BR');
 
   if (corpo && typeof corpo === 'object') {
-    const { message, messsage } = corpo as { message?: unknown; messsage?: unknown };
-    const texto = typeof messsage === 'string' ? messsage : typeof message === 'string' ? message : '';
-    return texto.trim() || null;
+    const resposta = corpo as {
+      message?: unknown;
+      messsage?: unknown;
+      error?: { code?: unknown; meta?: { target?: unknown; field_name?: unknown } };
+    };
+    const mensagem =
+      typeof resposta.messsage === 'string'
+        ? resposta.messsage
+        : typeof resposta.message === 'string'
+          ? resposta.message
+          : '';
+    const codigo = resposta.error?.code;
+    const alvos = resposta.error?.meta?.target;
+    const campo = resposta.error?.meta?.field_name;
+    const valores: unknown[] = [mensagem, codigo, campo];
+    if (Array.isArray(alvos)) {
+      valores.push(...alvos);
+    } else {
+      valores.push(alvos);
+    }
+    return valores
+      .filter((valor): valor is string => typeof valor === 'string')
+      .join(' ')
+      .toLocaleLowerCase('pt-BR');
   }
+  return '';
+}
+
+function mensagemDeCampo(detalhe: string): string | null {
+  if (/e-?mail|email/.test(detalhe)) return 'Este e-mail já está sendo utilizado.';
+  if (/telefone|celular|phone/.test(detalhe)) return 'Este telefone já está sendo utilizado.';
+  if (/hor[aá]rio|horario/.test(detalhe)) return 'Este horário já está cadastrado.';
+  if (/barbearia|estabelecimento/.test(detalhe)) {
+    return 'O estabelecimento informado não foi encontrado.';
+  }
+  if (/barbeiro|profissional/.test(detalhe)) {
+    return 'O profissional informado não foi encontrado.';
+  }
+  if (/servi[cç]o|servico/.test(detalhe)) return 'O serviço informado não foi encontrado.';
   return null;
 }
 
-/** Código do Prisma repassado pelo backend em { error: { code } } (P2002 = valor duplicado). */
-function codigoPrisma(erro: HttpErrorResponse): string | null {
-  const codigo = (erro.error as { error?: { code?: unknown } } | null)?.error?.code;
-  return typeof codigo === 'string' ? codigo : null;
-}
-
-/** "não foi possível excluir" -> "Não foi possível excluir." */
-function comoFrase(texto: string): string {
-  const frase = texto.charAt(0).toUpperCase() + texto.slice(1);
-  return /[.!?]$/.test(frase) ? frase : `${frase}.`;
-}
-
 /**
- * Mensagem amigável para um erro de requisição, na ordem:
- * sem conexão -> valor duplicado -> texto enviado pelo backend -> `padrao`.
+ * Converte respostas de erro do backend em mensagens adequadas à interface, sem expor
+ * mensagens técnicas, SQL, stack traces ou dados enviados na requisição.
  */
 export function mensagemDeErro(
   erro: unknown,
@@ -41,8 +60,21 @@ export function mensagemDeErro(
 ): string {
   if (!(erro instanceof HttpErrorResponse)) return padrao;
   if (erro.status === 0) return MSG_SEM_CONEXAO;
-  if (codigoPrisma(erro) === 'P2002') return duplicado;
 
-  const texto = textoDoBackend(erro);
-  return texto ? comoFrase(texto) : padrao;
+  const detalhe = detalheDoBackend(erro);
+  if (
+    /p2002|unique constraint|duplicate|duplicad|j[aá] existe|j[aá] cadastrad|already exists|already in use|already registered/.test(
+      detalhe
+    )
+  ) {
+    return mensagemDeCampo(detalhe) ?? duplicado;
+  }
+  if (
+    /p2003|p2025|foreign key|constraint failed|not found|n[aã]o encontrad|n[aã]o existe|inexistente|does not exist/.test(
+      detalhe
+    )
+  ) {
+    return mensagemDeCampo(detalhe) ?? padrao;
+  }
+  return padrao;
 }

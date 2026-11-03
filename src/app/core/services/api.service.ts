@@ -35,7 +35,13 @@ export class ApiService {
   private registrarErro<T>(metodo: string, path: string, requisicao: Observable<T>): Observable<T> {
     return requisicao.pipe(
       catchError((err) => {
-        console.error(`${metodo} ${path} failed:`, err);
+        const status =
+          typeof err === 'object' && err !== null && 'status' in err
+            ? (err as { status?: unknown }).status
+            : undefined;
+        console.error(`${metodo} ${path} failed`, {
+          status: typeof status === 'number' ? status : 'unknown',
+        });
         return throwError(() => err);
       })
     );
