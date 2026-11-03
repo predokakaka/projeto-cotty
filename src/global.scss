@@ -33,10 +33,13 @@ h2,
 h3,
 h4,
 h5,
-h6,
-ion-title {
+h6 {
   font-family: var(--app-font-heading);
   color: var(--app-text-primary);
+}
+
+ion-title {
+  font-family: var(--app-font-heading);
 }
 
 h1 {
@@ -84,6 +87,7 @@ ion-toolbar {
   --background: var(--app-navigation);
   --color: var(--app-on-navigation);
   --border-color: transparent;
+  --min-height: 56px;
 }
 
 ion-content.pagina {
@@ -96,7 +100,7 @@ ion-tab-bar {
   --color: var(--app-text-secondary-readable);
   --color-selected: var(--app-primary);
   border-top: 1px solid var(--app-border);
-  box-shadow: 0 -4px 16px rgba(var(--app-navigation-rgb), 0.06);
+  box-shadow: 0 -3px 12px rgba(var(--app-navigation-rgb), 0.045);
 }
 
 ion-list {
@@ -120,9 +124,15 @@ ion-toast {
   --color: var(--app-text-primary);
 }
 
+ion-toast {
+  --border-radius: var(--app-radius-control);
+  --box-shadow: var(--app-shadow-raised);
+  --button-color: var(--app-primary);
+}
+
 ion-alert {
   --background: var(--app-surface-elevated);
-  --backdrop-opacity: 0.42;
+  --backdrop-opacity: 0.38;
   --button-color: var(--app-primary);
   --color: var(--app-text-primary);
   font-family: var(--app-font-body);
@@ -142,6 +152,7 @@ ion-card {
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
   box-shadow: var(--app-shadow-card);
+  margin: 0;
 }
 
 ion-segment {
@@ -366,6 +377,11 @@ ion-button {
   &::part(native) {
     min-height: 44px;
   }
+
+  &.button-outline {
+    --border-width: 1px;
+    --border-style: solid;
+  }
 }
 
 ion-tab-button::part(native) {
@@ -381,6 +397,7 @@ ion-fab-button {
   --background-activated: var(--app-primary);
   --color: var(--app-contrast);
   --box-shadow: var(--app-shadow-raised);
+  --border-radius: 16px;
 }
 
 .ion-color-info {
@@ -489,7 +506,13 @@ ion-tab-button.tab-selected ion-icon {
 
 @media (hover: hover) {
   ion-button:not([disabled]):hover::part(native) {
-    filter: brightness(1.06);
+    filter: brightness(1.035);
+  }
+
+  .cartao-barbearia:hover,
+  .cartao-agendamento:hover,
+  .cartao-servico:hover {
+    border-color: var(--app-border-strong);
   }
 }
 

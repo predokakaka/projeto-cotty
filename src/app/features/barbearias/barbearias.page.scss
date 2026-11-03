@@ -3,10 +3,10 @@
 }
 
 .theme-toggle {
-  --background: var(--app-surface);
-  --background-activated: var(--app-olive-soft);
+  --background: rgba(var(--app-on-navigation-rgb), 0.1);
+  --background-activated: rgba(var(--app-on-navigation-rgb), 0.18);
   --color: var(--app-on-navigation);
-  --border-color: rgba(var(--app-on-navigation-rgb), 0.3);
+  --border-color: rgba(var(--app-on-navigation-rgb), 0.2);
   --border-style: solid;
   --border-width: 1px;
   --border-radius: var(--app-radius-control);
@@ -40,6 +40,10 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.13em;
+}
+
+.hero-sobretitulo {
+  color: var(--app-highlight-on-navigation);
 }
 
 .hero-conteudo h1 {
