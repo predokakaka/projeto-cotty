@@ -5,9 +5,6 @@
 export const environment = {
   production: false,
   api: `http://localhost:3000`,
-  // Fase de teste: false deixa abrir as páginas protegidas sem login.
-  // Troque para true para exigir sessão (o build de produção já exige).
-  exigirLogin: false,
 };
 
 /*

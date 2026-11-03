@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonHeader,
@@ -19,6 +19,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
+  arrowForwardOutline,
   locationOutline,
   cutOutline,
   storefrontOutline,
@@ -29,13 +30,20 @@ import {
   moonOutline,
   sunnyOutline,
 } from 'ionicons/icons';
+import { forkJoin } from 'rxjs';
 import { BarbeariaService } from '../../core/services/barbearia';
+import { BarbeiroService } from '../../core/services/barbeiro';
+import { ServicoService } from '../../core/services/servico';
 import { ThemeService } from '../../core/services/theme.service';
+import { Barbeiro } from '../../shared/models/modelo.barbeiro';
 import { Barbearia } from '../../shared/models/modelo.barbearia';
+import { Servico } from '../../shared/models/modelo.servico';
 import { normalizarTexto } from '../../shared/utils/texto';
 
 interface BarbeariaItem extends Barbearia {
   _busca: string;
+  _localizacao: string;
+  _categorias: string[];
 }
 
 @Component({
@@ -62,8 +70,14 @@ interface BarbeariaItem extends Barbearia {
 })
 export class BarbeariasPage {
   private barbeariaService = inject(BarbeariaService);
+  private barbeiroService = inject(BarbeiroService);
+  private servicoService = inject(ServicoService);
   private router = inject(Router);
   protected readonly theme = inject(ThemeService);
+
+  @ViewChild(IonContent) private conteudo?: IonContent;
+  @ViewChild('listaEstabelecimentos', { read: ElementRef })
+  private listaEstabelecimentos?: ElementRef<HTMLElement>;
 
   protected todasBarbearias: BarbeariaItem[] = [];
   protected barbearias: BarbeariaItem[] = [];
@@ -74,6 +88,7 @@ export class BarbeariasPage {
 
   constructor() {
     addIcons({
+      'arrow-forward-outline': arrowForwardOutline,
       'location-outline': locationOutline,
       'cut-outline': cutOutline,
       'storefront-outline': storefrontOutline,
@@ -137,15 +152,30 @@ export class BarbeariasPage {
     this.barbearias = this.todasBarbearias;
   }
 
+  protected buscarNovamente() {
+    this.buscarBarbearias();
+  }
+
+  protected async explorarEstabelecimentos() {
+    const alvo = this.listaEstabelecimentos?.nativeElement;
+    const conteudo = this.conteudo;
+    if (!alvo || !conteudo) return;
+
+    const areaRolagem = await conteudo.getScrollElement();
+    const distancia = alvo.getBoundingClientRect().top - areaRolagem.getBoundingClientRect().top;
+    await conteudo.scrollToPoint(0, areaRolagem.scrollTop + distancia, 350);
+  }
+
   private buscarBarbearias(aoFinalizar?: () => void) {
+    this.carregando = true;
     this.comErro = false;
-    this.barbeariaService.getBarbearias().subscribe({
-      next: (dados) => {
-        const lista = Array.isArray(dados) ? dados : [];
-        this.todasBarbearias = lista.map((b) => ({
-          ...b,
-          _busca: `${normalizarTexto(b.nomeFantasia)} ${normalizarTexto(b.endereco)} ${normalizarTexto(b.cidade)}`,
-        }));
+    forkJoin({
+      barbearias: this.barbeariaService.getBarbearias(),
+      barbeiros: this.barbeiroService.getBarbeiros(),
+      servicos: this.servicoService.getServicos(),
+    }).subscribe({
+      next: ({ barbearias, barbeiros, servicos }) => {
+        this.todasBarbearias = this.enriquecerBarbearias(barbearias, barbeiros, servicos);
         this.filtrar();
         this.carregando = false;
         aoFinalizar?.();
@@ -155,6 +185,45 @@ export class BarbeariasPage {
         this.carregando = false;
         aoFinalizar?.();
       },
+    });
+  }
+
+  private enriquecerBarbearias(
+    barbearias: Barbearia[],
+    barbeiros: Barbeiro[],
+    servicos: Servico[]
+  ): BarbeariaItem[] {
+    const nomesBarbeiros = new Map(
+      barbeiros.map((barbeiro) => [Number(barbeiro.id_barbeiro), barbeiro.nome])
+    );
+
+    return (Array.isArray(barbearias) ? barbearias : []).map((barbearia) => {
+      const servicosDaBarbearia = (Array.isArray(servicos) ? servicos : []).filter(
+        (servico) => Number(servico.barbearia_id) === Number(barbearia.barbearia_id)
+      );
+      const categorias = [...new Set(
+        servicosDaBarbearia.map((servico) => servico.nome_servico.trim()).filter(Boolean)
+      )];
+      const profissionais = servicosDaBarbearia
+        .map((servico) => nomesBarbeiros.get(Number(servico.barbeiro_id)))
+        .filter((nome): nome is string => Boolean(nome));
+      const localizacao = [barbearia.cidade, barbearia.endereco].filter(Boolean).join(' · ');
+      const busca = [
+        barbearia.nomeFantasia,
+        barbearia.cidade,
+        barbearia.endereco,
+        ...categorias,
+        ...profissionais,
+      ]
+        .map((texto) => normalizarTexto(texto))
+        .join(' ');
+
+      return {
+        ...barbearia,
+        _busca: busca,
+        _localizacao: localizacao,
+        _categorias: categorias,
+      };
     });
   }
 }

@@ -347,6 +347,13 @@
   gap: 10px;
 
   .horarios-titulo { font-size: 13px; font-weight: 500; color: var(--app-text-primary); }
+
+  .aviso-disponibilidade {
+    margin: -4px 0 0;
+    color: var(--app-text-secondary-readable);
+    font-size: 12px;
+    line-height: 1.4;
+  }
 }
 
 .grade-horarios {

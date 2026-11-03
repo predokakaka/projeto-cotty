@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 import { autorizacaoGuard } from './core/guards/autorizacao-guard';
+import { tipoContaGuard } from './core/guards/tipo-conta-guard';
 import { visitanteGuard } from './core/guards/visitante-guard';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'sobre-nos',
+    redirectTo: '/tabs/barbearias',
     pathMatch: 'full',
   },
   {
@@ -31,12 +32,12 @@ export const routes: Routes = [
   },
   {
     path: 'filiacao',
-    canActivate: [autorizacaoGuard],
+    canActivate: [tipoContaGuard('barbeiro')],
     loadComponent: () => import('./features/filiacao/filiacao.page').then((m) => m.FiliacaoPage),
   },
   {
     path: 'solicitacoes-filiacao',
-    canActivate: [autorizacaoGuard],
+    canActivate: [tipoContaGuard('barbearia')],
     loadComponent: () =>
       import('./features/solicitacoes-filiacao/solicitacoes-filiacao.page').then(
         (m) => m.SolicitacoesFiliacaoPage
@@ -44,7 +45,6 @@ export const routes: Routes = [
   },
   {
     path: 'tabs',
-    canActivate: [autorizacaoGuard],
     loadComponent: () => import('./layout/tabs/tabs.page').then((m) => m.TabsPage),
     children: [
       {
@@ -54,11 +54,13 @@ export const routes: Routes = [
       },
       {
         path: 'agendamentos',
+        canActivate: [autorizacaoGuard],
         loadComponent: () =>
           import('./features/agendamentos/agendamentos.page').then((m) => m.AgendamentosPage),
       },
       {
         path: 'conta',
+        canActivate: [autorizacaoGuard],
         loadComponent: () => import('./features/conta/conta.page').then((m) => m.ContaPage),
       },
       {
@@ -70,7 +72,6 @@ export const routes: Routes = [
   },
   {
     path: 'barbearia/:id',
-    canActivate: [autorizacaoGuard],
     loadComponent: () =>
       import('./features/barbearia-detail/barbearia-detail.page').then((m) => m.BarbeariaDetailPage),
   },

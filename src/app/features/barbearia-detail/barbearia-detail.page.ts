@@ -29,7 +29,7 @@ import {
   personOutline,
   informationCircleOutline,
 } from 'ionicons/icons';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 import { BarbeariaService } from '../../core/services/barbearia';
 import { ServicoService } from '../../core/services/servico';
 import { HorarioService } from '../../core/services/horario';
@@ -122,8 +122,25 @@ export class BarbeariaDetailPage {
     return this.loginService.getSessao()?.tipo === 'cliente';
   }
 
+  protected get ehVisitante(): boolean {
+    return !this.loginService.getSessao();
+  }
+
+  protected get podeIniciarAgendamento(): boolean {
+    return this.ehVisitante || this.ehCliente;
+  }
+
   protected get podeConfirmarAgendamento(): boolean {
     return this.ehCliente && !!this.servicoSelecionado && !!this.horarioSelecionado && !this.agendando;
+  }
+
+  protected get podeContinuarAgendamento(): boolean {
+    return (
+      this.podeIniciarAgendamento &&
+      !!this.servicoSelecionado &&
+      !!this.horarioSelecionado &&
+      !this.agendando
+    );
   }
 
   protected get etapaAgendamento(): number {
@@ -171,7 +188,29 @@ export class BarbeariaDetailPage {
   }
 
   protected irParaLogin() {
-    this.router.navigate(['/login']);
+    const queryParams: Record<string, number> = {};
+    if (this.servicoSelecionado) {
+      queryParams['servico_id'] = this.servicoSelecionado.servico_id;
+    }
+    if (this.horarioSelecionado) {
+      queryParams['horario_id'] = this.horarioSelecionado.horario_id;
+    }
+
+    const returnUrl = this.router.serializeUrl(
+      this.router.createUrlTree(['/barbearia', this.barbeariaId], { queryParams })
+    );
+    this.router.navigate(['/login'], { queryParams: { returnUrl } });
+  }
+
+  protected continuarAgendamento() {
+    if (!this.podeContinuarAgendamento) return;
+
+    if (this.ehVisitante) {
+      this.irParaLogin();
+      return;
+    }
+
+    this.solicitarConfirmacaoAgendamento();
   }
 
   protected async solicitarConfirmacaoAgendamento() {
@@ -190,6 +229,8 @@ export class BarbeariaDetailPage {
   }
 
   protected async confirmarExclusao() {
+    if (!this.ehDono) return;
+
     const alerta = await this.alertController.create({
       header: 'Excluir conta',
       message: 'Esta ação não pode ser desfeita. Digite sua senha para confirmar.',
@@ -227,7 +268,10 @@ export class BarbeariaDetailPage {
       servicos: listaOuVazia(this.servicoService.getServicos()),
       barbeiros: listaOuVazia(this.barbeiroService.getBarbeiros()),
       horarios: listaOuVazia(this.horarioService.getHorariosPorBarbearia(barbearia_id)),
-      agendamentos: listaOuVazia(this.agendamentoService.getAgendamentos()),
+      agendamentos:
+        this.loginService.getSessao()?.tipo === 'cliente'
+          ? listaOuVazia(this.agendamentoService.getAgendamentos())
+          : of([] as Agendamento[]),
     }).subscribe({
       next: ({ barbearia, servicos, barbeiros, horarios, agendamentos }) => {
         this.carregando = false;
@@ -240,6 +284,7 @@ export class BarbeariaDetailPage {
           this.todosHorarios = horarios;
           this.agendamentosExistentes = Array.isArray(agendamentos) ? agendamentos : [];
           this.atualizarHorarios();
+          this.restaurarSelecaoAgendamento();
         }
         aoFinalizar?.();
       },
@@ -250,6 +295,20 @@ export class BarbeariaDetailPage {
         aoFinalizar?.();
       },
     });
+  }
+
+  private restaurarSelecaoAgendamento() {
+    const servicoId = this.route.snapshot.queryParamMap.get('servico_id');
+    const horarioId = this.route.snapshot.queryParamMap.get('horario_id');
+    if (!servicoId || !horarioId) return;
+
+    const servico = this.servicos.find((item) => Number(item.servico_id) === Number(servicoId));
+    if (!servico) return;
+
+    this.servicoSelecionado = servico;
+    this.atualizarHorarios();
+    this.horarioSelecionado =
+      this.horariosDisponiveis.find((item) => Number(item.horario_id) === Number(horarioId)) ?? null;
   }
 
   /** Horários livres do barbeiro do serviço escolhido: marcados como disponíveis e sem agendamento. */
@@ -333,7 +392,7 @@ export class BarbeariaDetailPage {
 
   private excluir(senha: string) {
     const barbearia = this.barbearia;
-    if (!barbearia?.barbearia_id || !barbearia.email) {
+    if (!this.ehDono || !barbearia?.barbearia_id || !barbearia.email) {
       this.aviso.mostrar('Não foi possível identificar a conta para excluir.');
       return;
     }

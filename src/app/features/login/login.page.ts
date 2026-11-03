@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   IonContent,
@@ -31,6 +31,7 @@ import { ERRO_CREDENCIAIS, LoginService } from '../../core/services/login.servic
 })
 export class LoginPage {
   private loginService = inject(LoginService);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   protected entrando = false;
@@ -145,6 +146,12 @@ export class LoginPage {
   }
 
   private irParaInicio(sessao: Sessao) {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl && /^\/barbearia\/\d+(?:\?.*)?$/.test(returnUrl)) {
+      this.router.navigateByUrl(returnUrl, { replaceUrl: true });
+      return;
+    }
+
     if (sessao.tipo === 'barbearia') {
       this.router.navigate(['/barbearia', sessao.id], { replaceUrl: true });
     } else {

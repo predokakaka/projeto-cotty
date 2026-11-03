@@ -135,7 +135,7 @@
       <section class="secao">
         <div class="secao-cabecalho">
           <h2>Agendamento</h2>
-          @if (ehCliente) {
+          @if (podeIniciarAgendamento) {
             <div class="progresso-agendamento" aria-live="polite">
               <div class="progresso-agendamento-etapas" aria-label="Etapas do agendamento">
                 <span [class.atual]="etapaAgendamento === 1" [class.concluida]="etapaAgendamento > 1">1. Serviço</span>
@@ -151,16 +151,13 @@
           }
         </div>
 
-        @if (!ehCliente) {
+        @if (!podeIniciarAgendamento) {
           <div class="aviso-nao-cliente">
             <ion-icon name="information-circle-outline"></ion-icon>
             <div class="aviso-texto">
               <strong>Agendamento para clientes</strong>
-              <p>Entre com sua conta de cliente para agendar um horário neste estabelecimento.</p>
+              <p>Entre com uma conta de cliente para agendar um horário neste estabelecimento.</p>
             </div>
-            <ion-button fill="outline" (click)="irParaLogin()">
-              Entrar
-            </ion-button>
           </div>
         } @else {
           @if (!servicoSelecionado) {
@@ -179,6 +176,11 @@
 
               <div class="horarios-bloco">
                 <span class="horarios-titulo">Horários disponíveis:</span>
+                @if (ehVisitante) {
+                  <p class="aviso-disponibilidade">
+                    A disponibilidade será confirmada quando você entrar para concluir o agendamento.
+                  </p>
+                }
 
                 @if (horariosDisponiveis.length === 0) {
                   <div class="secao-vazia-horarios">
@@ -206,11 +208,13 @@
               <ion-button
                 expand="block"
                 class="btn-principal"
-                [disabled]="!podeConfirmarAgendamento || agendando"
-                (click)="solicitarConfirmacaoAgendamento()"
+                [disabled]="!podeContinuarAgendamento"
+                (click)="continuarAgendamento()"
               >
                 @if (agendando) {
                   <ion-spinner name="crescent"></ion-spinner>
+                } @else if (ehVisitante) {
+                  Entrar para continuar
                 } @else {
                   Confirmar agendamento
                 }
