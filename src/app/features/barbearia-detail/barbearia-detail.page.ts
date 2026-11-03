@@ -103,6 +103,8 @@ export class BarbeariaDetailPage {
 
   private nomesBarbeiros = new Map<number, string>();
   private todosHorarios: Horario[] = [];
+  private perfilCarregadoId: number | null = null;
+  private requisicaoEmAndamento = false;
   // Agendamentos já feitos: escondem horários ocupados (o backend não marca `disponivel = false`).
   private agendamentosExistentes: Agendamento[] = [];
 
@@ -174,6 +176,12 @@ export class BarbeariaDetailPage {
       this.comErro = true;
       return;
     }
+    if (this.perfilCarregadoId === this.barbeariaId && !this.comErro) {
+      if (this.barbearia) {
+        this.restaurarSelecaoAgendamento();
+      }
+      return;
+    }
     this.carregarDados();
   }
 
@@ -182,6 +190,12 @@ export class BarbeariaDetailPage {
       this.carregarDados(() => evento.target.complete());
     } else {
       evento.target.complete();
+    }
+  }
+
+  protected buscarNovamente() {
+    if (this.barbeariaId) {
+      this.carregarDados();
     }
   }
 
@@ -275,6 +289,11 @@ export class BarbeariaDetailPage {
 
   private carregarDados(aoFinalizar?: () => void) {
     const barbearia_id = this.barbeariaId;
+    if (this.requisicaoEmAndamento) {
+      aoFinalizar?.();
+      return;
+    }
+    this.requisicaoEmAndamento = true;
     this.carregando = true;
     this.comErro = false;
     this.servicoSelecionado = null;
@@ -283,7 +302,7 @@ export class BarbeariaDetailPage {
     forkJoin({
       barbearia: this.barbeariaService.getBarbeariaById(barbearia_id),
       servicos: listaOuVazia(this.servicoService.getServicos()),
-      barbeiros: listaOuVazia(this.barbeiroService.getBarbeiros()),
+      barbeiros: this.barbeiroService.getBarbeiros(),
       horarios: listaOuVazia(this.horarioService.getHorariosPorBarbearia(barbearia_id)),
       agendamentos:
         this.loginService.getSessao()?.tipo === 'cliente'
@@ -292,33 +311,42 @@ export class BarbeariaDetailPage {
     }).subscribe({
       next: ({ barbearia, servicos, barbeiros, horarios, agendamentos }) => {
         this.carregando = false;
-        this.comErro = !barbearia;
+        this.requisicaoEmAndamento = false;
+        this.comErro = false;
+        this.barbearia = barbearia;
 
         if (barbearia) {
-          this.barbearia = barbearia;
-          this.servicos = servicos.filter((s) => Number(s.barbearia_id) === barbearia_id);
-          const idsBarbeirosComServico = new Set(
-            this.servicos.map((servico) => Number(servico.barbeiro_id))
-          );
           this.barbeiros = barbeiros
-            .filter(
-              (barbeiro) =>
-                Number(barbeiro.barbearia_id) === barbearia_id ||
-                idsBarbeirosComServico.has(Number(barbeiro.id_barbeiro))
-            )
+            .filter((barbeiro) => Number(barbeiro.barbearia_id) === barbearia_id)
             .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-          this.nomesBarbeiros = new Map(barbeiros.map((b) => [Number(b.id_barbeiro), b.nome]));
+          const idsBarbeiros = new Set(this.barbeiros.map((barbeiro) => Number(barbeiro.id_barbeiro)));
+          this.servicos = servicos.filter(
+            (servico) =>
+              Number(servico.barbearia_id) === barbearia_id &&
+              idsBarbeiros.has(Number(servico.barbeiro_id))
+          );
+          this.nomesBarbeiros = new Map(
+            this.barbeiros.map((barbeiro) => [Number(barbeiro.id_barbeiro), barbeiro.nome])
+          );
           this.todosHorarios = horarios;
           this.agendamentosExistentes = Array.isArray(agendamentos) ? agendamentos : [];
+          this.perfilCarregadoId = barbearia_id;
           this.atualizarHorarios();
           this.restaurarSelecaoAgendamento();
+        } else {
+          this.barbeiros = [];
+          this.servicos = [];
+          this.perfilCarregadoId = barbearia_id;
         }
         aoFinalizar?.();
       },
       error: (err) => {
         console.error('Falha ao carregar dados da barbearia', err);
         this.carregando = false;
+        this.requisicaoEmAndamento = false;
         this.comErro = true;
+        this.barbearia = null;
+        this.perfilCarregadoId = null;
         aoFinalizar?.();
       },
     });

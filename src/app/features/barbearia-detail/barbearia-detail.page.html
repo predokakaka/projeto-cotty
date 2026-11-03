@@ -30,10 +30,17 @@
         </div>
       </div>
     </div>
-  } @else if (comErro || !barbearia) {
+  } @else if (comErro) {
     <div class="estado-vazio">
       <ion-icon name="cut-outline"></ion-icon>
-      <p>Não foi possível encontrar esse estabelecimento.</p>
+      <p>Não foi possível carregar os dados deste estabelecimento.</p>
+      <ion-button fill="outline" (click)="buscarNovamente()">Tentar novamente</ion-button>
+    </div>
+  } @else if (!barbearia) {
+    <div class="estado-vazio">
+      <ion-icon name="cut-outline"></ion-icon>
+      <p>Estabelecimento não encontrado.</p>
+      <ion-button fill="outline" (click)="buscarNovamente()">Tentar novamente</ion-button>
     </div>
   } @else {
     <main class="perfil-publico">
@@ -109,12 +116,26 @@
                 </div>
                 <div class="dados-profissional">
                   <h3>{{ barbeiro.nome }}</h3>
+                  <span class="profissional-estabelecimento">{{ barbearia.nomeFantasia }}</span>
                   @if (barbeiro.modalidade_atendimento) {
                     <span>{{ barbeiro.modalidade_atendimento }}</span>
                   }
                 </div>
               </article>
             }
+          </div>
+        </section>
+      } @else {
+        <section class="secao secao-profissionais" aria-labelledby="titulo-profissionais">
+          <div class="secao-cabecalho">
+            <div>
+              <p class="secao-sobretitulo">QUEM ATENDE</p>
+              <h2 id="titulo-profissionais">Profissionais</h2>
+            </div>
+          </div>
+          <div class="secao-vazia">
+            <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+            <p>Este estabelecimento ainda não possui profissionais vinculados.</p>
           </div>
         </section>
       }

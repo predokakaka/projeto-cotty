@@ -214,30 +214,42 @@
   }
 }
 
-.categorias-servicos {
+.cartao-descricao {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 10px 0 0;
+  color: var(--app-text-secondary-readable);
+  font-size: 12px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.cartao-detalhes {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 14px;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 12px;
+  color: var(--app-text-secondary-readable);
+  font-size: 11px;
 
-  span {
-    max-width: 100%;
+  span, a {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 5px;
+  }
+
+  a {
     overflow: hidden;
-    padding: 4px 8px;
-    color: var(--app-text-secondary-readable);
-    background: var(--app-olive-soft);
-    border-radius: var(--app-radius-badge);
-    font-size: 10px;
-    line-height: 1.35;
+    color: var(--app-accent);
+    text-decoration: none;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .categoria-mais {
-    color: var(--app-accent);
-    background: transparent;
-    font-weight: 600;
-  }
+  ion-icon { flex: 0 0 auto; font-size: 14px; }
 }
 
 .btn-perfil {
@@ -486,13 +498,6 @@
   }
 
   .cartao-local { margin-top: 8px; font-size: 11px; }
-
-  .categorias-servicos {
-    gap: 4px;
-    margin-top: 10px;
-
-    span { padding: 3px 6px; font-size: 9px; }
-  }
 
   .btn-perfil {
     min-height: 36px;

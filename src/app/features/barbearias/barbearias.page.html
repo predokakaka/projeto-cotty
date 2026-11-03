@@ -37,8 +37,8 @@
             [value]="termoBusca"
             (ionInput)="filtrar($event)"
             (ionClear)="limparBusca()"
-            placeholder="Nome, cidade, profissional ou serviço"
-            aria-label="Pesquisar estabelecimentos, profissionais ou serviços"
+            placeholder="Nome ou endereço"
+            aria-label="Pesquisar estabelecimentos por nome ou endereço"
             [debounce]="200"
             animated="true"
             show-clear-button="focus"
@@ -106,7 +106,7 @@
         <div class="estado-descoberta">
           <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
           <h3>Nenhum resultado para “{{ termoBusca }}”.</h3>
-          <p>Tente outro nome, cidade, profissional ou serviço.</p>
+          <p>Tente outro nome ou endereço.</p>
           <ion-button fill="outline" class="btn-repetir" (click)="limparBusca()">
             Limpar pesquisa
           </ion-button>
@@ -135,23 +135,30 @@
                   }
                 </div>
 
-                @if (barbearia._localizacao) {
+                @if (barbearia.endereco) {
                   <p class="cartao-local">
                     <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-                    <span>{{ barbearia._localizacao }}</span>
+                    <span>{{ barbearia.endereco }}</span>
                   </p>
                 }
 
-                @if (barbearia._categorias.length > 0) {
-                  <div class="categorias-servicos" aria-label="Serviços disponíveis">
-                    @for (categoria of barbearia._categorias.slice(0, 3); track categoria) {
-                      <span>{{ categoria }}</span>
-                    }
-                    @if (barbearia._categorias.length > 3) {
-                      <span class="categoria-mais">+{{ barbearia._categorias.length - 3 }}</span>
-                    }
-                  </div>
+                @if (barbearia.descricao) {
+                  <p class="cartao-descricao">{{ barbearia.descricao }}</p>
                 }
+
+                <div class="cartao-detalhes">
+                  <span>
+                    <ion-icon name="people-outline" aria-hidden="true"></ion-icon>
+                    {{ barbearia.qtdProfissionais }}
+                    {{ barbearia.qtdProfissionais === 1 ? 'profissional' : 'profissionais' }}
+                  </span>
+                  @if (barbearia.telefone) {
+                    <a [href]="'tel:' + barbearia.telefone" [attr.aria-label]="'Ligar para ' + barbearia.nomeFantasia">
+                      <ion-icon name="call-outline" aria-hidden="true"></ion-icon>
+                      {{ barbearia.telefone }}
+                    </a>
+                  }
+                </div>
 
                 <ion-button
                   class="btn-perfil"
