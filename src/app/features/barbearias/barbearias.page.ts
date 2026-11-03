@@ -36,6 +36,7 @@ import { BarbeariaService } from '../../core/services/barbearia';
 import { ThemeService } from '../../core/services/theme.service';
 import { Barbearia } from '../../shared/models/modelo.barbearia';
 import { normalizarTexto } from '../../shared/utils/texto';
+import type { RefresherCustomEvent } from '@ionic/core';
 
 interface BarbeariaItem extends Barbearia {
   _busca: string;
@@ -104,7 +105,7 @@ export class BarbeariasPage {
     }
   }
 
-  protected atualizar(evento: any) {
+  protected atualizar(evento: RefresherCustomEvent) {
     this.buscarBarbearias(() => evento.target.complete(), true);
   }
 

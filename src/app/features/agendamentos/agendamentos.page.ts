@@ -34,6 +34,7 @@ import { LoginService } from '../../core/services/login.service';
 import { AvisoService } from '../../core/services/aviso.service';
 import { listaOuVazia } from '../../shared/utils/rx';
 import { mensagemDeErro } from '../../shared/utils/erro';
+import type { RefresherCustomEvent } from '@ionic/core';
 
 const TITULOS: Record<TipoConta, string> = {
   cliente: 'Meus agendamentos',
@@ -106,7 +107,7 @@ export class AgendamentosPage {
     this.carregar();
   }
 
-  protected atualizar(evento: any) {
+  protected atualizar(evento: RefresherCustomEvent) {
     this.carregar(() => evento.target.complete());
   }
 
@@ -205,29 +206,35 @@ export class AgendamentosPage {
           return;
         }
 
+        const servicosPorChave = new Map(
+          servicos.map((servico) => [
+            `${Number(servico.servico_id)}:${Number(servico.barbeiro_id)}:${Number(servico.barbearia_id)}`,
+            servico.nome_servico,
+          ])
+        );
+        const barbeirosPorChave = new Map(
+          barbeiros.map((barbeiro) => [
+            `${Number(barbeiro.id_barbeiro)}:${Number(barbeiro.barbearia_id)}`,
+            barbeiro.nome,
+          ])
+        );
+        const barbeariasPorId = new Map(
+          barbearias.map((barbearia) => [Number(barbearia.barbearia_id), barbearia.nomeFantasia])
+        );
+        const clientesPorId = new Map(
+          clientes.map((cliente) => [Number(cliente.cliente_id), cliente.nome])
+        );
+
         this.itens = agendamentos
           .filter((a) => this.pertenceASessao(a, sessao))
           .map((a) => ({
             idAgendamento: a.idAgendamento,
             servico:
-              servicos.find(
-                (s) =>
-                  Number(s.servico_id) === a.servico_id &&
-                  Number(s.barbeiro_id) === a.barbeiro_id &&
-                  Number(s.barbearia_id) === a.barbearia_id
-              )?.nome_servico ?? 'Serviço',
-            barbeiro:
-              barbeiros.find(
-                (b) =>
-                  Number(b.id_barbeiro) === a.barbeiro_id &&
-                  Number(b.barbearia_id) === a.barbearia_id
-              )?.nome ??
-              'Profissional',
-            barbearia:
-              barbearias.find((b) => Number(b.barbearia_id) === a.barbearia_id)
-                ?.nomeFantasia ?? 'Estabelecimento',
-            cliente:
-              clientes.find((c) => Number(c.cliente_id) === a.cliente_id)?.nome ?? 'Cliente',
+              servicosPorChave.get(`${a.servico_id}:${a.barbeiro_id}:${a.barbearia_id}`) ??
+              'Serviço',
+            barbeiro: barbeirosPorChave.get(`${a.barbeiro_id}:${a.barbearia_id}`) ?? 'Profissional',
+            barbearia: barbeariasPorId.get(a.barbearia_id) ?? 'Estabelecimento',
+            cliente: clientesPorId.get(a.cliente_id) ?? 'Cliente',
             horario: a.horario_agendado,
           }))
           .sort((x, y) => x.horario.localeCompare(y.horario, 'pt-BR', { numeric: true }));

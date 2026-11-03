@@ -281,8 +281,11 @@ export class CadastroPage {
     this.enviando = false;
   }
 
-  protected trocarTipo(evento: CustomEvent) {
-    this.tipo = evento.detail.value as TipoCadastro;
+  protected trocarTipo(evento: CustomEvent<{ value?: string | number }>) {
+    const tipo = evento.detail.value;
+    if (tipo !== 'cliente' && tipo !== 'barbeiro') return;
+
+    this.tipo = tipo;
     this.mensagemErro = '';
     this.tentouEnviar = false;
     if (this.tipo === 'barbeiro') {
@@ -307,10 +310,8 @@ export class CadastroPage {
     });
   }
 
-  protected aoDigitarTelefone(evento: any) {
-    const formatado = formatarTelefone(evento.target.value ?? '');
-    this.form.telefone = formatado;
-    evento.target.value = formatado;
+  protected aoDigitarTelefone(evento: CustomEvent<{ value?: string | number | null }>) {
+    this.form.telefone = formatarTelefone(String(evento.detail.value ?? ''));
   }
 
   protected aoDigitarSenha(

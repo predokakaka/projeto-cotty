@@ -25,6 +25,7 @@ import {
 import { BarbeariaService } from '../../core/services/barbearia';
 import { Barbearia } from '../../shared/models/modelo.barbearia';
 import { normalizarTexto } from '../../shared/utils/texto';
+import type { RefresherCustomEvent } from '@ionic/core';
 
 interface BarbeariaEncontrada extends Barbearia {
   busca: string;
@@ -59,6 +60,8 @@ export class FiliacaoPage {
   protected termoBusca = '';
   protected carregando = true;
   protected comErro = false;
+  private dadosCarregados = false;
+  private requisicaoEmAndamento = false;
 
   constructor() {
     addIcons({
@@ -73,8 +76,8 @@ export class FiliacaoPage {
     this.buscarBarbearias();
   }
 
-  protected atualizar(evento: any) {
-    this.buscarBarbearias(() => evento.target.complete());
+  protected atualizar(evento: RefresherCustomEvent) {
+    this.buscarBarbearias(() => evento.target.complete(), true);
   }
 
   protected filtrar(evento?: CustomEvent<{ value?: string | null }>) {
@@ -103,7 +106,17 @@ export class FiliacaoPage {
     this.router.navigate(['/solicitacoes-filiacao']);
   }
 
-  private buscarBarbearias(aoFinalizar?: () => void) {
+  private buscarBarbearias(aoFinalizar?: () => void, forcar = false) {
+    if (this.requisicaoEmAndamento) {
+      aoFinalizar?.();
+      return;
+    }
+    if (this.dadosCarregados && !forcar) {
+      aoFinalizar?.();
+      return;
+    }
+
+    this.requisicaoEmAndamento = true;
     this.carregando = true;
     this.comErro = false;
     this.barbeariaService.getBarbearias().subscribe({
@@ -113,10 +126,14 @@ export class FiliacaoPage {
           busca: normalizarTexto(barbearia.nomeFantasia),
         }));
         this.filtrar();
+        this.dadosCarregados = true;
+        this.requisicaoEmAndamento = false;
         this.carregando = false;
         aoFinalizar?.();
       },
       error: () => {
+        this.dadosCarregados = false;
+        this.requisicaoEmAndamento = false;
         this.comErro = true;
         this.carregando = false;
         aoFinalizar?.();

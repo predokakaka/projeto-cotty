@@ -45,6 +45,7 @@ import { Servico } from '../../shared/models/modelo.servico';
 import { Horario } from '../../shared/models/modelo.horario';
 import { Agendamento, AgendamentoCriacao } from '../../shared/models/modelo.agendamento';
 import { MSG_SEM_CONEXAO, mensagemDeErro } from '../../shared/utils/erro';
+import type { RefresherCustomEvent } from '@ionic/core';
 
 @Component({
   selector: 'app-barbearia-detail',
@@ -182,7 +183,7 @@ export class BarbeariaDetailPage {
     this.carregarDados();
   }
 
-  protected atualizar(evento: any) {
+  protected atualizar(evento: RefresherCustomEvent) {
     if (this.barbeariaId) {
       this.carregarDados(() => evento.target.complete());
     } else {
