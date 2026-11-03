@@ -36,191 +36,233 @@
       <p>Não foi possível encontrar esse estabelecimento.</p>
     </div>
   } @else {
-    <div class="capa">
-      @if (barbearia.foto) {
-        <ion-img [src]="barbearia.foto" [alt]="barbearia.nomeFantasia"></ion-img>
-      } @else {
-        <div class="capa-indisponivel">
-          <ion-icon name="cut-outline"></ion-icon>
-        </div>
-      }
-    </div>
-
-    <div class="perfil-conteudo">
-      <div class="perfil-cabecalho">
-        <h1>{{ barbearia.nomeFantasia }}</h1>
-        @if (barbearia.status) {
-          <ion-badge [color]="barbearia.status.toLowerCase() === 'aberto' ? 'success' : 'medium'">
-            {{ barbearia.status }}
-          </ion-badge>
-        }
-      </div>
-
-      <div class="perfil-detalhes">
-        <div class="detalhe-item">
-          <ion-icon name="location-outline"></ion-icon>
-          <span>{{ barbearia.endereco }}</span>
-        </div>
-
-        @if (barbearia.telefone) {
-          <a class="detalhe-item link-telefone" [href]="'tel:' + barbearia.telefone">
-            <ion-icon name="call-outline"></ion-icon>
-            <span>{{ barbearia.telefone }}</span>
-          </a>
-        }
-
-        @if (barbearia.qtdProfissionais) {
-          <div class="detalhe-item">
-            <ion-icon name="people-outline"></ion-icon>
-            <span>
-              {{ barbearia.qtdProfissionais }}
-              {{ barbearia.qtdProfissionais === 1 ? 'profissional' : 'profissionais' }}
-            </span>
+    <main class="perfil-publico">
+      <div class="capa">
+        @if (barbearia.foto) {
+          <ion-img [src]="barbearia.foto" [alt]="'Imagem de capa de ' + barbearia.nomeFantasia"></ion-img>
+        } @else {
+          <div class="capa-indisponivel" aria-label="Imagem de capa não disponível">
+            <ion-icon name="cut-outline" aria-hidden="true"></ion-icon>
           </div>
         }
       </div>
 
-      @if (barbearia.descricao) {
-        <p class="descricao">{{ barbearia.descricao }}</p>
+      <header class="perfil-intro">
+        <div class="intro-identidade">
+          <div class="perfil-cabecalho">
+            <h1>{{ barbearia.nomeFantasia }}</h1>
+            @if (barbearia.status) {
+              <ion-badge [color]="barbearia.status.toLowerCase() === 'aberto' ? 'success' : 'medium'">
+                {{ barbearia.status }}
+              </ion-badge>
+            }
+          </div>
+
+          @if (barbearia.cidade || barbearia.endereco) {
+            <div class="perfil-localizacao">
+              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+              <span>{{ barbearia.endereco }}@if (barbearia.endereco && barbearia.cidade) { · }{{ barbearia.cidade }}</span>
+            </div>
+          }
+        </div>
+
+        @if (barbearia.telefone) {
+          <a class="contato-telefone" [href]="'tel:' + barbearia.telefone">
+            <ion-icon name="call-outline" aria-hidden="true"></ion-icon>
+            <span>{{ barbearia.telefone }}</span>
+          </a>
+        }
+
+        @if (barbearia.descricao) {
+          <p class="descricao">{{ barbearia.descricao }}</p>
+        }
+
+        @if (podeIniciarAgendamento && servicos.length > 0) {
+          <ion-button class="cta-agendar" (click)="iniciarAgendamento()">
+            Escolher serviço e horário
+            <ion-icon slot="end" name="calendar-outline" aria-hidden="true"></ion-icon>
+          </ion-button>
+        }
+      </header>
+
+      @if (barbeiros.length > 0) {
+        <section class="secao secao-profissionais" aria-labelledby="titulo-profissionais">
+          <div class="secao-cabecalho">
+            <div>
+              <p class="secao-sobretitulo">QUEM ATENDE</p>
+              <h2 id="titulo-profissionais">Profissionais</h2>
+            </div>
+            <span class="secao-contagem">
+              {{ barbeiros.length }} {{ barbeiros.length === 1 ? 'profissional' : 'profissionais' }}
+            </span>
+          </div>
+
+          <div class="lista-profissionais">
+            @for (barbeiro of barbeiros; track barbeiro.id_barbeiro) {
+              <article class="cartao-profissional">
+                <div class="foto-profissional">
+                  @if (barbeiro.foto) {
+                    <ion-img [src]="barbeiro.foto" [alt]="'Foto de ' + barbeiro.nome"></ion-img>
+                  } @else {
+                    <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+                  }
+                </div>
+                <div class="dados-profissional">
+                  <h3>{{ barbeiro.nome }}</h3>
+                  @if (barbeiro.modalidade_atendimento) {
+                    <span>{{ barbeiro.modalidade_atendimento }}</span>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        </section>
       }
 
-      <section class="secao">
+      <section #secaoServicos class="secao secao-servicos" aria-labelledby="titulo-servicos">
         <div class="secao-cabecalho">
-          <h2>Serviços</h2>
-          <span class="secao-subtitulo">Selecione um serviço para agendar</span>
+          <div>
+            <p class="secao-sobretitulo">O QUE VOCÊ PROCURA</p>
+            <h2 id="titulo-servicos">Serviços</h2>
+          </div>
+          @if (servicos.length > 0) {
+            <span class="secao-contagem">
+              {{ servicos.length }} {{ servicos.length === 1 ? 'opção' : 'opções' }}
+            </span>
+          }
         </div>
 
         @if (servicos.length === 0) {
           <div class="secao-vazia">
-            <ion-icon name="cut-outline"></ion-icon>
+            <ion-icon name="cut-outline" aria-hidden="true"></ion-icon>
             <p>Este estabelecimento ainda não cadastrou serviços.</p>
           </div>
         } @else {
           <div class="lista-servicos">
             @for (servico of servicos; track servico.servico_id) {
-              <div
+              <button
+                type="button"
                 class="cartao-servico"
                 [class.selecionado]="servicoSelecionado?.servico_id === servico.servico_id"
-                role="button"
-                tabindex="0"
                 [attr.aria-pressed]="servicoSelecionado?.servico_id === servico.servico_id"
-                [attr.aria-label]="'Selecionar serviço ' + servico.nome_servico"
                 (click)="selecionarServico(servico)"
-                (keydown.space)="$event.preventDefault()"
-                (keyup.space)="selecionarServico(servico)"
-                (keyup.enter)="selecionarServico(servico)"
               >
-                <div class="servico-topo">
-                  <div class="servico-info">
-                    <span class="servico-nome">{{ servico.nome_servico }}</span>
-                    <span class="servico-barbeiro">
-                      <ion-icon name="person-outline"></ion-icon>
-                      {{ obterNomeBarbeiro(servico.barbeiro_id) }}
-                    </span>
-                  </div>
-                  @if (servicoSelecionado?.servico_id === servico.servico_id) {
-                    <ion-badge color="warning">Selecionado</ion-badge>
+                <span class="servico-conteudo">
+                  <span class="servico-nome">{{ servico.nome_servico }}</span>
+                  <span class="servico-profissional">
+                    <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+                    {{ obterNomeBarbeiro(servico.barbeiro_id) }}
+                  </span>
+                  @if (servico.descricao_servico) {
+                    <span class="servico-descricao">{{ servico.descricao_servico }}</span>
                   }
-                </div>
-
-                @if (servico.descricao_servico) {
-                  <p class="servico-descricao">{{ servico.descricao_servico }}</p>
-                }
-              </div>
+                </span>
+                <span class="servico-acao" aria-hidden="true">
+                  @if (servicoSelecionado?.servico_id === servico.servico_id) {
+                    <ion-icon name="checkmark-circle-outline"></ion-icon>
+                  } @else {
+                    <ion-icon name="arrow-forward-outline"></ion-icon>
+                  }
+                </span>
+              </button>
             }
           </div>
         }
       </section>
 
-      <section class="secao">
+      <section #secaoAgendamento class="secao secao-agendamento" aria-labelledby="titulo-agendamento">
         <div class="secao-cabecalho">
-          <h2>Agendamento</h2>
-          @if (podeIniciarAgendamento) {
-            <div class="progresso-agendamento" aria-live="polite">
-              <div class="progresso-agendamento-etapas" aria-label="Etapas do agendamento">
-                <span [class.atual]="etapaAgendamento === 1" [class.concluida]="etapaAgendamento > 1">1. Serviço</span>
-                <span [class.atual]="etapaAgendamento === 2" [class.concluida]="etapaAgendamento > 2">2. Horário</span>
-                <span [class.atual]="etapaAgendamento === 3">3. Confirmar</span>
-              </div>
-              <ion-progress-bar
-                [value]="etapaAgendamento / 3"
-                [attr.aria-label]="rotuloProgressoAgendamento"
-              ></ion-progress-bar>
-              <span class="progresso-agendamento-status">{{ rotuloProgressoAgendamento }}</span>
-            </div>
-          }
+          <div>
+            <p class="secao-sobretitulo">PRÓXIMO PASSO</p>
+            <h2 id="titulo-agendamento">Agendamento</h2>
+          </div>
         </div>
 
         @if (!podeIniciarAgendamento) {
           <div class="aviso-nao-cliente">
-            <ion-icon name="information-circle-outline"></ion-icon>
+            <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
             <div class="aviso-texto">
               <strong>Agendamento para clientes</strong>
-              <p>Entre com uma conta de cliente para agendar um horário neste estabelecimento.</p>
+              <p>Entre com uma conta de cliente para escolher um horário.</p>
             </div>
           </div>
+        } @else if (servicos.length === 0) {
+          <div class="aviso-selecao">
+            <p>Os horários ficam disponíveis quando há serviços cadastrados.</p>
+          </div>
+        } @else if (!servicoSelecionado) {
+          <div class="aviso-selecao">
+            <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+            <p>Escolha um serviço para consultar os horários disponíveis.</p>
+          </div>
         } @else {
-          @if (!servicoSelecionado) {
-            <div class="aviso-selecao">
-              <ion-icon name="calendar-outline"></ion-icon>
-              <p>Escolha um serviço acima para ver os horários disponíveis.</p>
+          <div class="progresso-agendamento" aria-live="polite">
+            <div class="progresso-agendamento-etapas" aria-label="Etapas do agendamento">
+              <span [class.concluida]="etapaAgendamento > 1">1. Serviço</span>
+              <span [class.atual]="etapaAgendamento === 2" [class.concluida]="etapaAgendamento > 2">2. Horário</span>
+              <span [class.atual]="etapaAgendamento === 3">3. Confirmar</span>
             </div>
-          } @else {
-            <div class="agendamento-fluxo">
-              <div class="passo-resumo">
-                <span class="passo-label">Serviço selecionado:</span>
-                <span class="passo-valor">
-                  {{ servicoSelecionado.nome_servico }} &bull; {{ obterNomeBarbeiro(servicoSelecionado.barbeiro_id) }}
-                </span>
-              </div>
+            <ion-progress-bar
+              [value]="etapaAgendamento / 3"
+              [attr.aria-label]="rotuloProgressoAgendamento"
+            ></ion-progress-bar>
+            <span class="progresso-agendamento-status">{{ rotuloProgressoAgendamento }}</span>
+          </div>
 
-              <div class="horarios-bloco">
-                <span class="horarios-titulo">Horários disponíveis:</span>
-                @if (ehVisitante) {
-                  <p class="aviso-disponibilidade">
-                    A disponibilidade será confirmada quando você entrar para concluir o agendamento.
-                  </p>
-                }
-
-                @if (horariosDisponiveis.length === 0) {
-                  <div class="secao-vazia-horarios">
-                    <ion-icon name="time-outline"></ion-icon>
-                    <p>Nenhum horário disponível para este profissional no momento.</p>
-                  </div>
-                } @else {
-                  <div class="grade-horarios">
-                    @for (item of horariosDisponiveis; track item.horario_id) {
-                      <button
-                        type="button"
-                        class="botao-horario"
-                        [class.selecionado]="horarioSelecionado?.horario_id === item.horario_id"
-                        [attr.aria-pressed]="horarioSelecionado?.horario_id === item.horario_id"
-                        (click)="selecionarHorario(item)"
-                      >
-                        <ion-icon name="time-outline"></ion-icon>
-                        <span>{{ item.horario }}</span>
-                      </button>
-                    }
-                  </div>
-                }
-              </div>
-
-              <ion-button
-                expand="block"
-                class="btn-principal"
-                [disabled]="!podeContinuarAgendamento"
-                (click)="continuarAgendamento()"
-              >
-                @if (agendando) {
-                  <ion-spinner name="crescent"></ion-spinner>
-                } @else if (ehVisitante) {
-                  Entrar para continuar
-                } @else {
-                  Confirmar agendamento
-                }
-              </ion-button>
+          <div class="agendamento-fluxo">
+            <div class="passo-resumo">
+              <span class="passo-label">Serviço escolhido</span>
+              <span class="passo-valor">
+                {{ servicoSelecionado.nome_servico }} · {{ obterNomeBarbeiro(servicoSelecionado.barbeiro_id) }}
+              </span>
             </div>
-          }
+
+            <div class="horarios-bloco">
+              <span class="horarios-titulo">Horários disponíveis</span>
+              @if (ehVisitante) {
+                <p class="aviso-disponibilidade">
+                  A disponibilidade será confirmada quando você entrar para concluir o agendamento.
+                </p>
+              }
+
+              @if (horariosDisponiveis.length === 0) {
+                <div class="secao-vazia-horarios">
+                  <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+                  <p>Nenhum horário disponível para este profissional no momento.</p>
+                </div>
+              } @else {
+                <div class="grade-horarios">
+                  @for (item of horariosDisponiveis; track item.horario_id) {
+                    <button
+                      type="button"
+                      class="botao-horario"
+                      [class.selecionado]="horarioSelecionado?.horario_id === item.horario_id"
+                      [attr.aria-pressed]="horarioSelecionado?.horario_id === item.horario_id"
+                      (click)="selecionarHorario(item)"
+                    >
+                      <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+                      <span>{{ item.horario }}</span>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            <ion-button
+              expand="block"
+              class="btn-principal"
+              [disabled]="!podeContinuarAgendamento"
+              (click)="continuarAgendamento()"
+            >
+              @if (agendando) {
+                <ion-spinner name="crescent"></ion-spinner>
+              } @else if (ehVisitante) {
+                Entrar para continuar
+              } @else {
+                Confirmar agendamento
+              }
+            </ion-button>
+          </div>
         }
       </section>
 
@@ -241,6 +283,6 @@
           </ion-button>
         </div>
       }
-    </div>
+    </main>
   }
 </ion-content>

@@ -1,21 +1,51 @@
+:host {
+  display: block;
+}
+
+.perfil-publico {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 24px 0 64px;
+}
+
 .capa {
   width: 100%;
-  height: 220px;
-  background: var(--app-surface-elevated);
+  height: clamp(220px, 38vw, 390px);
+  overflow: hidden;
+  background: var(--app-surface-inset);
+  border-radius: var(--app-radius-card);
 
   ion-img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.capa-indisponivel {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--app-text-secondary-readable);
+
+  ion-icon { font-size: 44px; }
+}
+
+.perfil-skeleton {
+  width: min(1120px, calc(100% - 32px));
+  margin: 24px auto 64px;
 }
 
 .perfil-skeleton-capa {
   display: block;
   width: 100%;
-  height: 220px;
+  height: clamp(220px, 38vw, 390px);
   margin: 0;
-  border-radius: 0;
+  border-radius: var(--app-radius-card);
 }
 
 .perfil-skeleton-conteudo {
+  display: flex;
+  flex-direction: column;
   gap: 18px;
+  padding: 24px 4px;
 }
 
 .perfil-skeleton-cabecalho {
@@ -35,7 +65,6 @@
   width: 72px;
   height: 22px;
   margin: 0;
-  border-radius: var(--app-radius-pill);
 }
 
 .perfil-skeleton-detalhe {
@@ -67,107 +96,270 @@
   width: 100%;
   height: 70px;
   margin: 0;
-  border-radius: var(--app-radius-card);
+  border-radius: var(--app-radius-control);
 }
 
-.capa-indisponivel {
-  width: 100%;
-  height: 100%;
-  display: flex;
+.perfil-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: center;
-
-  ion-icon { font-size: 48px; color: var(--app-text-secondary-readable); }
+  gap: 14px 24px;
+  padding: 24px 4px 28px;
+  border-bottom: 1px solid var(--app-border);
 }
 
-.perfil-conteudo {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.intro-identidade {
+  min-width: 0;
 }
 
 .perfil-cabecalho {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
 
   h1 {
     margin: 0;
-    font-size: 22px;
-    font-weight: 700;
     color: var(--app-text-primary);
-    line-height: 1.25;
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.15;
   }
 
   ion-badge {
     flex-shrink: 0;
+    padding: 5px 9px;
+    border-radius: var(--app-radius-badge);
     font-size: 11px;
     text-transform: none;
-    padding: 4px 8px;
   }
 }
 
-.perfil-detalhes {
+.perfil-localizacao {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.detalhe-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 11px;
+  color: var(--app-text-secondary-readable);
   font-size: 13px;
-  color: var(--app-accent);
+  line-height: 1.5;
 
-  ion-icon { font-size: 16px; flex-shrink: 0; }
-  span { color: var(--app-text-primary); }
-
-  &.link-telefone {
-    text-decoration: none;
-    cursor: pointer;
-    width: fit-content;
-
-    span { color: var(--app-accent); }
-    &:hover, &:focus-visible { text-decoration: underline; }
+  ion-icon {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    color: var(--app-accent);
+    font-size: 16px;
   }
+}
+
+.contato-telefone {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--app-accent);
+  font-size: 13px;
+  text-decoration: none;
+
+  ion-icon { font-size: 16px; }
+  &:hover, &:focus-visible { text-decoration: underline; }
 }
 
 .descricao {
+  grid-column: 1 / -1;
+  max-width: 760px;
   margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
   color: var(--app-text-secondary-readable);
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.cta-agendar {
+  --background: var(--app-accent);
+  --background-activated: var(--app-primary-shade);
+  --color: var(--app-contrast);
+  --border-radius: var(--app-radius-control);
+  min-height: 46px;
+  margin: 0;
+  padding-inline: 8px;
+  font-weight: 600;
+  text-transform: none;
+  white-space: nowrap;
 }
 
 .secao {
-  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  padding: 28px 4px 0;
 }
 
 .secao-cabecalho {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
 
-  h2 { margin: 0; font-size: 18px; font-weight: 600; color: var(--app-text-primary); }
-  .secao-subtitulo { font-size: 13px; color: var(--app-text-secondary-readable); }
+  h2 {
+    margin: 0;
+    color: var(--app-text-primary);
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: -0.025em;
+  }
+}
+
+.secao-sobretitulo {
+  margin: 0 0 5px;
+  color: var(--app-accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.secao-contagem {
+  color: var(--app-text-secondary-readable);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.lista-profissionais {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.cartao-profissional {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-control);
+}
+
+.foto-profissional {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  color: var(--app-accent);
+  background: var(--app-olive-soft);
+  border-radius: 50%;
+
+  ion-img { width: 100%; height: 100%; object-fit: cover; }
+  > ion-icon { font-size: 21px; }
+}
+
+.dados-profissional {
+  min-width: 0;
+
+  h3 {
+    overflow: hidden;
+    margin: 0;
+    color: var(--app-text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    display: block;
+    margin-top: 3px;
+    color: var(--app-text-secondary-readable);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+}
+
+.lista-servicos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cartao-servico {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  color: var(--app-text-primary);
+  text-align: left;
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-control);
+  cursor: pointer;
+  transition: border-color var(--app-transition-base), background-color var(--app-transition-base);
+
+  &:hover,
+  &:focus-visible { border-color: var(--app-accent); }
+
+  &:focus-visible {
+    outline: 3px solid rgba(var(--app-primary-rgb), 0.28);
+    outline-offset: 2px;
+  }
+
+  &.selecionado {
+    background: var(--app-olive-soft);
+    border-color: var(--app-accent);
+  }
+}
+
+.servico-conteudo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.servico-nome {
+  color: var(--app-text-primary);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.servico-profissional {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--app-accent);
+  font-size: 12px;
+
+  ion-icon { flex: 0 0 auto; font-size: 14px; }
+}
+
+.servico-descricao {
+  color: var(--app-text-secondary-readable);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.servico-acao {
+  flex: 0 0 auto;
+  padding-top: 2px;
+  color: var(--app-accent);
+  font-size: 18px;
 }
 
 .progresso-agendamento {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 10px;
 
   ion-progress-bar {
     --background: var(--app-border);
     --progress-background: var(--app-accent);
-    height: 6px;
+    height: 5px;
     border-radius: var(--app-radius-pill);
   }
 }
@@ -194,130 +386,41 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px 16px;
+  gap: 9px;
+  padding: 18px 16px;
   text-align: center;
   background: var(--app-surface);
   border: 1px dashed var(--app-border);
   border-radius: var(--app-radius-control);
   color: var(--app-text-secondary-readable);
 
-  p { margin: 0; font-size: 13px; line-height: 1.4; }
+  p { margin: 0; font-size: 13px; line-height: 1.5; }
+  ion-icon { flex: 0 0 auto; color: var(--app-accent); font-size: 20px; }
 }
 
-.secao-vazia,
 .secao-vazia-horarios {
   flex-direction: column;
-  gap: 8px;
-  ion-icon { font-size: 26px; color: var(--app-accent); }
+  padding: 20px;
 }
 
-.aviso-selecao {
-  gap: 10px;
-  text-align: left;
-  ion-icon { font-size: 22px; color: var(--app-accent); flex-shrink: 0; }
-}
-
-.lista-servicos {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.cartao-servico,
 .aviso-nao-cliente,
 .agendamento-fluxo {
   background: var(--app-surface-elevated);
-  border-radius: var(--app-radius-card);
-}
-
-.cartao-servico {
-  min-height: 72px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px;
   border: 1px solid var(--app-border);
-  box-shadow: var(--app-shadow-card);
-  cursor: pointer;
-  transition: border-color var(--app-transition-base), background-color var(--app-transition-base), transform var(--app-transition-base), box-shadow var(--app-transition-base);
-
-  &:hover, &:focus-visible {
-    border-color: var(--app-accent);
-    transform: translateY(-1px);
-    box-shadow: var(--app-shadow-raised);
-  }
-
-  &:focus-visible { outline: 3px solid rgba(var(--app-primary-rgb), 0.35); outline-offset: 2px; }
-
-  &.selecionado {
-    border-color: var(--app-accent);
-    background: var(--app-teal-light);
-  }
-}
-
-.servico-topo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-
-  ion-badge { flex-shrink: 0; font-size: 11px; text-transform: none; }
-}
-
-.servico-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.servico-nome {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--app-text-primary);
-  line-height: 1.3;
-}
-
-.servico-barbeiro {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--app-accent);
-
-  ion-icon { font-size: 14px; flex-shrink: 0; }
-}
-
-.servico-descricao {
-  margin: 0;
-  font-size: 13px;
-  color: var(--app-text-secondary-readable);
-  line-height: 1.4;
+  border-radius: var(--app-radius-control);
 }
 
 .aviso-nao-cliente {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--app-border);
-  box-shadow: var(--app-shadow-card);
+  padding: 16px;
 
-  ion-icon { font-size: 26px; color: var(--app-accent); flex-shrink: 0; }
+  > ion-icon { flex: 0 0 auto; color: var(--app-accent); font-size: 24px; }
 
   .aviso-texto {
-    flex: 1;
-    strong { display: block; font-size: 14px; color: var(--app-text-primary); margin-bottom: 2px; }
-    p { margin: 0; font-size: 12px; color: var(--app-text-secondary-readable); line-height: 1.3; }
-  }
-
-  ion-button {
-    --color: var(--app-accent);
-    --border-color: var(--app-accent);
-    --border-radius: var(--app-radius-control);
-    font-size: 13px;
-    text-transform: none;
-    flex-shrink: 0;
+    strong { display: block; margin-bottom: 3px; color: var(--app-text-primary); font-size: 14px; }
+    p { margin: 0; color: var(--app-text-secondary-readable); font-size: 12px; line-height: 1.45; }
   }
 }
 
@@ -326,8 +429,6 @@
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  border: 1px solid var(--app-border);
-  box-shadow: var(--app-shadow-card);
 }
 
 .passo-resumo {
@@ -337,8 +438,8 @@
   padding-bottom: 12px;
   border-bottom: 1px solid var(--app-border);
 
-  .passo-label { font-size: 12px; color: var(--app-text-secondary-readable); }
-  .passo-valor { font-size: 14px; font-weight: 600; color: var(--app-text-primary); }
+  .passo-label { color: var(--app-text-secondary-readable); font-size: 11px; }
+  .passo-valor { color: var(--app-text-primary); font-size: 14px; font-weight: 600; }
 }
 
 .horarios-bloco {
@@ -346,7 +447,7 @@
   flex-direction: column;
   gap: 10px;
 
-  .horarios-titulo { font-size: 13px; font-weight: 500; color: var(--app-text-primary); }
+  .horarios-titulo { color: var(--app-text-primary); font-size: 13px; font-weight: 600; }
 
   .aviso-disponibilidade {
     margin: -4px 0 0;
@@ -363,37 +464,39 @@
 }
 
 .botao-horario {
-  min-height: 48px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 8px;
+  padding: 9px 8px;
+  color: var(--app-text-primary);
   background: var(--app-background);
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-control);
-  color: var(--app-text-primary);
-  font-size: 13px;
   font-family: inherit;
+  font-size: 13px;
   cursor: pointer;
-  transition: border-color var(--app-transition-base), background-color var(--app-transition-base), color var(--app-transition-base), box-shadow var(--app-transition-base);
 
-  ion-icon { font-size: 14px; color: var(--app-accent); flex-shrink: 0; }
+  ion-icon { flex: 0 0 auto; color: var(--app-accent); font-size: 14px; }
   &:hover, &:focus-visible { border-color: var(--app-accent); }
-  &:focus-visible { outline: 3px solid rgba(var(--app-primary-rgb), 0.35); outline-offset: 2px; }
+  &:focus-visible { outline: 3px solid rgba(var(--app-primary-rgb), 0.28); outline-offset: 2px; }
 
   &.selecionado {
-    border-color: var(--app-primary);
-    background: var(--app-primary);
     color: var(--app-contrast);
+    background: var(--app-primary);
+    border-color: var(--app-primary);
     font-weight: 600;
-    box-shadow: var(--app-shadow-card);
     ion-icon { color: var(--app-contrast); }
   }
 }
 
+.secao-agendamento {
+  padding-bottom: 8px;
+}
+
 .zona-perigo {
-  margin-top: 24px;
+  margin: 30px 4px 0;
   padding-top: 20px;
   border-top: 1px solid var(--app-border);
 
@@ -401,4 +504,54 @@
     --border-radius: var(--app-radius-control);
     text-transform: none;
   }
+}
+
+@media (max-width: 640px) {
+  .perfil-publico {
+    width: min(100% - 24px, 520px);
+    padding-top: 12px;
+  }
+
+  .capa {
+    height: 230px;
+    border-radius: var(--app-radius-control);
+  }
+
+  .perfil-skeleton {
+    width: min(100% - 24px, 520px);
+    margin-top: 12px;
+  }
+
+  .perfil-skeleton-capa { height: 230px; }
+
+  .perfil-intro {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 20px 2px 22px;
+  }
+
+  .perfil-cabecalho {
+    align-items: flex-start;
+    justify-content: space-between;
+
+    h1 { font-size: 26px; }
+  }
+
+  .descricao { font-size: 13px; }
+
+  .cta-agendar { width: 100%; }
+
+  .secao { padding: 24px 2px 0; }
+
+  .secao-cabecalho h2 { font-size: 20px; }
+
+  .lista-profissionais { grid-template-columns: 1fr; gap: 8px; }
+
+  .lista-servicos { grid-template-columns: 1fr; gap: 8px; }
+
+  .cartao-servico { padding: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cartao-servico { transition: none; }
 }

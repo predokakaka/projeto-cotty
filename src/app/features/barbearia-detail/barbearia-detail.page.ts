@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonHeader,
@@ -20,6 +20,8 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
+  arrowForwardOutline,
+  checkmarkCircleOutline,
   locationOutline,
   cutOutline,
   callOutline,
@@ -38,6 +40,7 @@ import { AgendamentoService } from '../../core/services/agendamento';
 import { LoginService } from '../../core/services/login.service';
 import { AvisoService } from '../../core/services/aviso.service';
 import { Barbearia } from '../../shared/models/modelo.barbearia';
+import { Barbeiro } from '../../shared/models/modelo.barbeiro';
 import { Servico } from '../../shared/models/modelo.servico';
 import { Horario } from '../../shared/models/modelo.horario';
 import { Agendamento, AgendamentoCriacao } from '../../shared/models/modelo.agendamento';
@@ -78,7 +81,14 @@ export class BarbeariaDetailPage {
   private aviso = inject(AvisoService);
   private router = inject(Router);
 
+  @ViewChild(IonContent) private conteudo?: IonContent;
+  @ViewChild('secaoServicos', { read: ElementRef })
+  private elementoServicos?: ElementRef<HTMLElement>;
+  @ViewChild('secaoAgendamento', { read: ElementRef })
+  private elementoAgendamento?: ElementRef<HTMLElement>;
+
   protected barbearia: Barbearia | null = null;
+  protected barbeiros: Barbeiro[] = [];
   protected servicos: Servico[] = [];
   // Recalculado só quando muda a seleção ou os dados (e não a cada ciclo de renderização).
   protected horariosDisponiveis: Horario[] = [];
@@ -98,6 +108,8 @@ export class BarbeariaDetailPage {
 
   constructor() {
     addIcons({
+      'arrow-forward-outline': arrowForwardOutline,
+      'checkmark-circle-outline': checkmarkCircleOutline,
       'location-outline': locationOutline,
       'cut-outline': cutOutline,
       'call-outline': callOutline,
@@ -181,10 +193,15 @@ export class BarbeariaDetailPage {
     this.servicoSelecionado = servico;
     this.horarioSelecionado = null;
     this.atualizarHorarios();
+    this.rolarAte(this.elementoAgendamento);
   }
 
   protected selecionarHorario(horario: Horario) {
     this.horarioSelecionado = horario;
+  }
+
+  protected iniciarAgendamento() {
+    this.rolarAte(this.elementoServicos);
   }
 
   protected irParaLogin() {
@@ -280,6 +297,16 @@ export class BarbeariaDetailPage {
         if (barbearia) {
           this.barbearia = barbearia;
           this.servicos = servicos.filter((s) => Number(s.barbearia_id) === barbearia_id);
+          const idsBarbeirosComServico = new Set(
+            this.servicos.map((servico) => Number(servico.barbeiro_id))
+          );
+          this.barbeiros = barbeiros
+            .filter(
+              (barbeiro) =>
+                Number(barbeiro.barbearia_id) === barbearia_id ||
+                idsBarbeirosComServico.has(Number(barbeiro.id_barbeiro))
+            )
+            .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
           this.nomesBarbeiros = new Map(barbeiros.map((b) => [Number(b.id_barbeiro), b.nome]));
           this.todosHorarios = horarios;
           this.agendamentosExistentes = Array.isArray(agendamentos) ? agendamentos : [];
@@ -295,6 +322,16 @@ export class BarbeariaDetailPage {
         aoFinalizar?.();
       },
     });
+  }
+
+  private async rolarAte(elemento?: ElementRef<HTMLElement>) {
+    const conteudo = this.conteudo;
+    const alvo = elemento?.nativeElement;
+    if (!conteudo || !alvo) return;
+
+    const areaRolagem = await conteudo.getScrollElement();
+    const distancia = alvo.getBoundingClientRect().top - areaRolagem.getBoundingClientRect().top;
+    await conteudo.scrollToPoint(0, areaRolagem.scrollTop + distancia - 12, 300);
   }
 
   private restaurarSelecaoAgendamento() {
