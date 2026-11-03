@@ -31,7 +31,7 @@
   } @else if (comErro) {
     <div class="estado-vazio">
       <ion-icon name="calendar-outline"></ion-icon>
-      <p>Não foi possível carregar os agendamentos agora.</p>
+      <p>{{ mensagemErro }}</p>
       <span>Puxe a tela para baixo para tentar de novo.</span>
     </div>
   } @else if (itens.length === 0) {

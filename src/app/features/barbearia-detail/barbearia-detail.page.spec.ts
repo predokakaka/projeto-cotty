@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular/standalone';
 import { of, throwError } from 'rxjs';
 import { AgendamentoService } from '../../core/services/agendamento';
@@ -14,6 +14,8 @@ import { Barbearia } from '../../shared/models/modelo.barbearia';
 import { Barbeiro } from '../../shared/models/modelo.barbeiro';
 import { Horario } from '../../shared/models/modelo.horario';
 import { Servico } from '../../shared/models/modelo.servico';
+import { Agendamento } from '../../shared/models/modelo.agendamento';
+import { Sessao } from '../../shared/models/modelo.login';
 import { BarbeariaDetailPage } from './barbearia-detail.page';
 
 describe('BarbeariaDetailPage - serviços e horários', () => {
@@ -50,14 +52,32 @@ describe('BarbeariaDetailPage - serviços e horários', () => {
   let servicoService: jasmine.SpyObj<ServicoService>;
   let horarioService: jasmine.SpyObj<HorarioService>;
   let barbeiroService: jasmine.SpyObj<BarbeiroService>;
+  let agendamentoService: jasmine.SpyObj<AgendamentoService>;
+  let avisoService: jasmine.SpyObj<AvisoService>;
+  let sessaoAtiva: Sessao | null;
+  let confirmarAgendamento: (() => unknown) | null;
 
   beforeEach(() => {
+    sessaoAtiva = null;
+    confirmarAgendamento = null;
     servicoService = jasmine.createSpyObj('ServicoService', ['getServicos']);
     servicoService.getServicos.and.returnValue(of(servicos));
     horarioService = jasmine.createSpyObj('HorarioService', ['getHorariosPorBarbearia']);
     horarioService.getHorariosPorBarbearia.and.returnValue(of(horarios));
     barbeiroService = jasmine.createSpyObj('BarbeiroService', ['getBarbeiros']);
     barbeiroService.getBarbeiros.and.returnValue(of(barbeiros));
+    agendamentoService = jasmine.createSpyObj('AgendamentoService', ['criarAgendamento']);
+    agendamentoService.criarAgendamento.and.returnValue(
+      of({
+        idAgendamento: 501,
+        cliente_id: 7,
+        servico_id: 1,
+        barbeiro_id: 100,
+        barbearia_id: 10,
+        horario_agendado: '09:00',
+      })
+    );
+    avisoService = jasmine.createSpyObj('AvisoService', ['mostrar']);
 
     TestBed.configureTestingModule({
       imports: [BarbeariaDetailPage],
@@ -81,11 +101,22 @@ describe('BarbeariaDetailPage - serviços e horários', () => {
         { provide: HorarioService, useValue: horarioService },
         {
           provide: AgendamentoService,
-          useValue: { criarAgendamento: () => of({}) },
+          useValue: agendamentoService,
         },
-        { provide: LoginService, useValue: { getSessao: () => null } },
-        { provide: AvisoService, useValue: { mostrar: () => undefined } },
-        { provide: AlertController, useValue: { create: () => Promise.resolve({ present: () => undefined }) } },
+        { provide: LoginService, useValue: { getSessao: () => sessaoAtiva } },
+        { provide: AvisoService, useValue: avisoService },
+        {
+          provide: AlertController,
+          useValue: {
+            create: (config: unknown) => {
+              const botoes = (config as { buttons?: { text?: string; handler?: () => unknown }[] })
+                .buttons;
+              confirmarAgendamento =
+                botoes?.find((botao) => botao.text === 'Confirmar')?.handler ?? null;
+              return Promise.resolve({ present: () => Promise.resolve() });
+            },
+          },
+        },
       ],
     });
   });
@@ -104,6 +135,15 @@ describe('BarbeariaDetailPage - serviços e horários', () => {
       root.querySelectorAll<HTMLButtonElement>('.cartao-servico')
     );
     botoes.find((botao) => botao.textContent?.includes(nome))?.click();
+    fixture.detectChanges();
+  }
+
+  function selecionarHorario(fixture: ComponentFixture<BarbeariaDetailPage>, horario: string): void {
+    const root = fixture.nativeElement as HTMLElement;
+    const botao = Array.from(root.querySelectorAll<HTMLButtonElement>('.botao-horario')).find(
+      (item) => item.textContent?.includes(horario)
+    );
+    botao?.click();
     fixture.detectChanges();
   }
 
@@ -158,6 +198,103 @@ describe('BarbeariaDetailPage - serviços e horários', () => {
     expect(botoes.length).toBe(1);
     expect(botoes[0].textContent).toContain('11:00');
     expect(botoes[0].textContent).toContain('Disponível');
+  });
+
+  it('cria agendamento com os IDs reais e o valor textual do horário selecionado', async () => {
+    sessaoAtiva = { tipo: 'cliente', id: 7, nome: 'Cliente teste' };
+    const fixture = carregarPagina();
+    clicarServico(fixture, 'Corte Ana');
+    selecionarHorario(fixture, '09:00');
+
+    const root = fixture.nativeElement as HTMLElement;
+    root.querySelector<HTMLElement>('.btn-principal')?.click();
+    await fixture.whenStable();
+    confirmarAgendamento?.();
+
+    expect(agendamentoService.criarAgendamento).toHaveBeenCalledOnceWith({
+      cliente_id: 7,
+      servico_id: 1,
+      barbeiro_id: 100,
+      barbearia_id: 10,
+      horario_agendado: '09:00',
+    });
+    expect(avisoService.mostrar).toHaveBeenCalledWith('Agendamento confirmado com sucesso!');
+  });
+
+  it('mantém o horário selecionado e informa falha na criação', async () => {
+    sessaoAtiva = { tipo: 'cliente', id: 7, nome: 'Cliente teste' };
+    agendamentoService.criarAgendamento.and.returnValue(
+      throwError(() => new HttpErrorResponse({ status: 0 }))
+    );
+    const fixture = carregarPagina();
+    clicarServico(fixture, 'Corte Ana');
+    selecionarHorario(fixture, '09:00');
+
+    const root = fixture.nativeElement as HTMLElement;
+    root.querySelector<HTMLElement>('.btn-principal')?.click();
+    await fixture.whenStable();
+    confirmarAgendamento?.();
+    fixture.detectChanges();
+
+    expect(root.querySelector('.botao-horario.selecionado')).not.toBeNull();
+    expect(avisoService.mostrar).toHaveBeenCalledWith(
+      jasmine.stringMatching(/Não foi possível concluir o agendamento/)
+    );
+  });
+
+  it('não informa sucesso quando a API retorna um agendamento incompatível', async () => {
+    sessaoAtiva = { tipo: 'cliente', id: 7, nome: 'Cliente teste' };
+    const respostaInesperada: Agendamento = {
+      idAgendamento: 501,
+      cliente_id: 7,
+      servico_id: 2,
+      barbeiro_id: 101,
+      barbearia_id: 10,
+      horario_agendado: '11:00',
+    };
+    agendamentoService.criarAgendamento.and.returnValue(of(respostaInesperada));
+    const fixture = carregarPagina();
+    clicarServico(fixture, 'Corte Ana');
+    selecionarHorario(fixture, '09:00');
+
+    const root = fixture.nativeElement as HTMLElement;
+    root.querySelector<HTMLElement>('.btn-principal')?.click();
+    await fixture.whenStable();
+    confirmarAgendamento?.();
+    fixture.detectChanges();
+
+    expect(avisoService.mostrar).not.toHaveBeenCalledWith(
+      'Agendamento confirmado com sucesso!'
+    );
+    expect(root.querySelector('.botao-horario.selecionado')).not.toBeNull();
+  });
+
+  it('não permite selecionar ou enviar horário marcado como indisponível', () => {
+    sessaoAtiva = { tipo: 'cliente', id: 7, nome: 'Cliente teste' };
+    const fixture = carregarPagina();
+    clicarServico(fixture, 'Corte Ana');
+    selecionarHorario(fixture, '10:00');
+
+    expect(fixture.nativeElement.querySelector('.botao-horario.selecionado')).toBeNull();
+    expect(agendamentoService.criarAgendamento).not.toHaveBeenCalled();
+  });
+
+  it('preserva estabelecimento, serviço e horário selecionados ao encaminhar visitante ao login', () => {
+    const fixture = carregarPagina();
+    clicarServico(fixture, 'Corte Ana');
+    selecionarHorario(fixture, '09:00');
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+
+    const root = fixture.nativeElement as HTMLElement;
+    root.querySelector<HTMLElement>('.btn-principal')?.click();
+
+    const navegacao = (router.navigate as jasmine.Spy).calls.mostRecent().args;
+    const returnUrl = navegacao[1]?.queryParams?.returnUrl as string;
+    expect(navegacao[0]).toEqual(['/login']);
+    expect(returnUrl).toContain('/barbearia/10?');
+    expect(returnUrl).toContain('servico_id=1');
+    expect(returnUrl).toContain('horario_id=11');
   });
 
   it('mostra estado vazio quando o profissional não possui horários', () => {

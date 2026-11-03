@@ -43,7 +43,7 @@ import { Barbearia } from '../../shared/models/modelo.barbearia';
 import { Barbeiro } from '../../shared/models/modelo.barbeiro';
 import { Servico } from '../../shared/models/modelo.servico';
 import { Horario } from '../../shared/models/modelo.horario';
-import { AgendamentoCriacao } from '../../shared/models/modelo.agendamento';
+import { Agendamento, AgendamentoCriacao } from '../../shared/models/modelo.agendamento';
 import { MSG_SEM_CONEXAO, mensagemDeErro } from '../../shared/utils/erro';
 
 @Component({
@@ -422,7 +422,14 @@ export class BarbeariaDetailPage {
       !servico ||
       !horario ||
       Number(servico.barbearia_id) !== Number(this.barbearia.barbearia_id) ||
-      horario.disponivel !== true
+      horario.disponivel !== true ||
+      !this.horariosDoProfissional.some(
+        (item) =>
+          Number(item.horario_id) === Number(horario.horario_id) &&
+          Number(item.barbeiro_id) === Number(servico.barbeiro_id) &&
+          Number(item.barbearia_id) === Number(servico.barbearia_id) &&
+          item.disponivel === true
+      )
     ) {
       this.aviso.mostrar('Você precisa estar conectado como cliente para agendar.');
       return;
@@ -438,24 +445,44 @@ export class BarbeariaDetailPage {
 
     this.agendando = true;
     this.agendamentoService.criarAgendamento(dados).subscribe({
-      next: () => {
+      next: (resposta) => {
         this.agendando = false;
+        if (!this.respostaAgendamentoValida(resposta, dados)) {
+          this.aviso.mostrar(
+            'Não foi possível concluir o agendamento. O servidor retornou uma resposta inesperada.'
+          );
+          return;
+        }
         this.horarioSelecionado = null;
         this.aviso.mostrar('Agendamento confirmado com sucesso!');
       },
       error: (erro) => {
         this.agendando = false;
-        this.horarioSelecionado = null;
-        // P2002 = valor duplicado: pode ser horário já reservado ou conflito de registro.
+        const detalhe = mensagemDeErro(
+          erro,
+          'Tente novamente.',
+          'O horário pode não estar mais disponível. Escolha outro.'
+        );
         this.aviso.mostrar(
-          mensagemDeErro(
-            erro,
-            'Não foi possível concluir o agendamento. Tente novamente.',
-            'Não foi possível reservar este horário porque ele já está ocupado. Escolha outro.'
-          )
+          `Não foi possível concluir o agendamento. ${detalhe}`
         );
       },
     });
+  }
+
+  private respostaAgendamentoValida(
+    resposta: Agendamento,
+    solicitado: AgendamentoCriacao
+  ): boolean {
+    if (!resposta || typeof resposta !== 'object') return false;
+    return (
+      Number.isSafeInteger(resposta.idAgendamento) &&
+      resposta.cliente_id === solicitado.cliente_id &&
+      resposta.servico_id === solicitado.servico_id &&
+      resposta.barbeiro_id === solicitado.barbeiro_id &&
+      resposta.barbearia_id === solicitado.barbearia_id &&
+      resposta.horario_agendado === solicitado.horario_agendado
+    );
   }
 
   private excluir(senha: string) {

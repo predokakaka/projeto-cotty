@@ -33,6 +33,7 @@ import { ClienteService } from '../../core/services/cliente';
 import { LoginService } from '../../core/services/login.service';
 import { AvisoService } from '../../core/services/aviso.service';
 import { listaOuVazia } from '../../shared/utils/rx';
+import { mensagemDeErro } from '../../shared/utils/erro';
 
 const TITULOS: Record<TipoConta, string> = {
   cliente: 'Meus agendamentos',
@@ -88,6 +89,7 @@ export class AgendamentosPage {
   protected itens: AgendamentoItem[] = [];
   protected carregando = true;
   protected comErro = false;
+  protected mensagemErro = 'Não foi possível carregar os agendamentos agora.';
   protected cancelandoId: number | null = null;
 
   constructor() {
@@ -150,9 +152,11 @@ export class AgendamentosPage {
         this.itens = this.itens.filter((i) => i.idAgendamento !== item.idAgendamento);
         this.aviso.mostrar('Agendamento cancelado.');
       },
-      error: () => {
+      error: (erro) => {
         this.cancelandoId = null;
-        this.aviso.mostrar('Não foi possível cancelar o agendamento. Tente novamente.');
+        this.aviso.mostrar(
+          mensagemDeErro(erro, 'Não foi possível cancelar o agendamento. Tente novamente.')
+        );
       },
     });
   }
@@ -171,6 +175,7 @@ export class AgendamentosPage {
 
     this.carregando = true;
     this.comErro = false;
+    this.mensagemErro = 'Não foi possível carregar os agendamentos agora.';
 
     forkJoin({
       agendamentos: this.agendamentoService.getAgendamentos(),
@@ -182,23 +187,47 @@ export class AgendamentosPage {
         sessao.tipo === 'cliente' ? of([] as Cliente[]) : listaOuVazia(this.clienteService.getClientes()),
     }).subscribe({
       next: ({ agendamentos, servicos, barbeiros, barbearias, clientes }) => {
-        const lista = Array.isArray(agendamentos) ? agendamentos : [];
+        if (!Array.isArray(agendamentos)) {
+          this.itens = [];
+          this.comErro = true;
+          this.mensagemErro = 'O servidor retornou uma resposta inesperada para os agendamentos.';
+          this.carregando = false;
+          aoFinalizar?.();
+          return;
+        }
 
-        this.itens = lista
+        if (!agendamentos.every((agendamento) => this.agendamentoValido(agendamento))) {
+          this.itens = [];
+          this.comErro = true;
+          this.mensagemErro = 'O servidor retornou uma resposta inesperada para os agendamentos.';
+          this.carregando = false;
+          aoFinalizar?.();
+          return;
+        }
+
+        this.itens = agendamentos
           .filter((a) => this.pertenceASessao(a, sessao))
           .map((a) => ({
             idAgendamento: a.idAgendamento,
             servico:
-              servicos.find((s) => Number(s.servico_id) === Number(a.servico_id))?.nome_servico ??
-              'Serviço',
+              servicos.find(
+                (s) =>
+                  Number(s.servico_id) === a.servico_id &&
+                  Number(s.barbeiro_id) === a.barbeiro_id &&
+                  Number(s.barbearia_id) === a.barbearia_id
+              )?.nome_servico ?? 'Serviço',
             barbeiro:
-              barbeiros.find((b) => Number(b.id_barbeiro) === Number(a.barbeiro_id))?.nome ??
+              barbeiros.find(
+                (b) =>
+                  Number(b.id_barbeiro) === a.barbeiro_id &&
+                  Number(b.barbearia_id) === a.barbearia_id
+              )?.nome ??
               'Profissional',
             barbearia:
-              barbearias.find((b) => Number(b.barbearia_id) === Number(a.barbearia_id))
+              barbearias.find((b) => Number(b.barbearia_id) === a.barbearia_id)
                 ?.nomeFantasia ?? 'Estabelecimento',
             cliente:
-              clientes.find((c) => Number(c.cliente_id) === Number(a.cliente_id))?.nome ?? 'Cliente',
+              clientes.find((c) => Number(c.cliente_id) === a.cliente_id)?.nome ?? 'Cliente',
             horario: a.horario_agendado,
           }))
           .sort((x, y) => x.horario.localeCompare(y.horario, 'pt-BR', { numeric: true }));
@@ -209,20 +238,41 @@ export class AgendamentosPage {
       error: (err) => {
         console.error('Falha ao carregar agendamentos', err);
         this.comErro = true;
+        this.mensagemErro = mensagemDeErro(
+          err,
+          'Não foi possível carregar os agendamentos agora. Tente novamente.'
+        );
         this.carregando = false;
         aoFinalizar?.();
       },
     });
   }
 
+  private agendamentoValido(agendamento: Agendamento): boolean {
+    return (
+      !!agendamento &&
+      Number.isSafeInteger(agendamento.idAgendamento) &&
+      agendamento.idAgendamento > 0 &&
+      Number.isSafeInteger(agendamento.cliente_id) &&
+      agendamento.cliente_id > 0 &&
+      Number.isSafeInteger(agendamento.servico_id) &&
+      agendamento.servico_id > 0 &&
+      Number.isSafeInteger(agendamento.barbeiro_id) &&
+      agendamento.barbeiro_id > 0 &&
+      Number.isSafeInteger(agendamento.barbearia_id) &&
+      agendamento.barbearia_id > 0 &&
+      typeof agendamento.horario_agendado === 'string'
+    );
+  }
+
   private pertenceASessao(a: Agendamento, sessao: Sessao): boolean {
     switch (sessao.tipo) {
       case 'cliente':
-        return Number(a.cliente_id) === sessao.id;
+        return a.cliente_id === sessao.id;
       case 'barbeiro':
-        return Number(a.barbeiro_id) === sessao.id;
+        return a.barbeiro_id === sessao.id;
       case 'barbearia':
-        return Number(a.barbearia_id) === sessao.id;
+        return a.barbearia_id === sessao.id;
     }
   }
 }
